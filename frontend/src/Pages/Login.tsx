@@ -17,6 +17,7 @@ import './pages.css'
 export default function Login() {
   return (
     <div className="LoginScreen">
+    <h1 className="Header">Welcome to Note Cast</h1>
         <Card className="w-sm max-w-sm">
         <CardHeader>
             <CardTitle>Login to your account</CardTitle>

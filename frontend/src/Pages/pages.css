@@ -4,4 +4,10 @@
     height: 100%;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    gap: 10rem;
+
+}
+.Header{
+    font-size: 80px;
 }
