@@ -13,7 +13,7 @@ Amplify.configure({
       loginWith: {
         oauth: {
           domain: 'us-east-2ohdmf5rj9.auth.us-east-2.amazoncognito.com',
-          scopes: ['email', 'openid', 'profile'],
+          scopes: ['email', 'openid', 'phone'],
           redirectSignIn: ['http://localhost:5173/NoteCast/'],
           redirectSignOut: ['http://localhost:5173/NoteCast/Login/'],
           responseType: 'code',

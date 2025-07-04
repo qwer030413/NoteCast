@@ -16,13 +16,30 @@ import './pages.css'
 import { useState } from "react";
 import UserPool from "@/aws/UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp(){
     const [Email, setEmail] = useState("")
     const [Password, setPassword] = useState("")
+    const [Password2, setPassword2] = useState("")
     const [Username, setUsername] = useState("")
+    const navigate = useNavigate()
+
     const handleSignUp = () =>{
-        console.log(Email, Password, Username)
+        if(Password != Password2){
+            toast(`Passwords has to match!!`,
+                {
+                    icon: '❌',
+                    style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                    },
+                }
+            );
+            return
+        }
         const attributeEmail = new CognitoUserAttribute({
             Name: "email",
             Value: Email,
@@ -31,9 +48,30 @@ export default function SignUp(){
         UserPool.signUp(Username,Password, attributeList, [], (err, data) => {
             if(err){
                 console.log(err)
+                toast(`Oops, something went wrong`,
+                    {
+                        icon: '❌',
+                        style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                        },
+                    }
+                );
             }
             else{
                 console.log(data)
+                toast(`Vertification Email sent to ${Email}`,
+                    {
+                        icon: '✅',
+                        style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                        },
+                    }
+                );
+                navigate('/Login')
             }
         })
     }
@@ -90,7 +128,13 @@ export default function SignUp(){
                         <div className="flex items-center">
                             <Label htmlFor="password">Retype Password</Label>
                         </div>
-                        <Input id="password2" type="password" required />
+                        <Input
+                        id="password2" 
+                        type="password" 
+                        required 
+                        value={Password2}
+                        onChange={(e) => setPassword2(e.target.value)}
+                        />
                     
                     </div>
                 </div>

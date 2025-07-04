@@ -44,7 +44,7 @@ export function LoginForm({
                 <Label htmlFor="email">Email / Username</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   placeholder="m@example.com"
                   required
                   value={email}
