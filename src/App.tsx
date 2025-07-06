@@ -5,6 +5,8 @@ import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
 import { AuthRoute } from './components/UserAuth/AuthRoute';
 import { Toaster } from 'react-hot-toast';
+import ForgotPassword from './Pages/ForgotPassword';
+import ResetPassword from './Pages/ResetPassword';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
     <Routes>
       <Route path = "/Login" element = {<Login />} />
       <Route path = "/SignUp" element = {<SignUp />} />
+      <Route path = "/ForgotPassword" element = {<ForgotPassword />} />
+      <Route path = "/ResetPassword" element = {<ResetPassword />} />
       <Route 
         path = "/"
         element = {

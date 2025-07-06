@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/login-form"
+import { LoginForm } from "@/components/login-form1"
 import { useNavigate } from "react-router-dom"
 import { signIn, signInWithRedirect, signOut} from '@aws-amplify/auth'
 import toast from "react-hot-toast";
