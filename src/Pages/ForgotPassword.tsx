@@ -18,12 +18,12 @@ export default function ForgotPassword() {
             switch (nextStep.resetPasswordStep) {
             case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
                 toast(`Confirmation code was sent to ${email}`, {
-                icon: '📨',
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                },
+                    icon: '📨',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
                 });
                 navigate('/ResetPassword', { state: { email } })
                 break;

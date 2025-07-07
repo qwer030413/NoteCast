@@ -11,7 +11,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react";
 interface ResetPasswordProps extends React.ComponentProps<"div"> {
   password: string
   password1: string
@@ -20,7 +21,7 @@ interface ResetPasswordProps extends React.ComponentProps<"div"> {
   setPassword1: (password1: string) => void
   setCode: (code: string) => void
   className?: string; 
-  handleReset: () => Promise<void>;
+  handleReset: () => void;
 }
 export function ResetPasswordForm({
   password,
@@ -34,6 +35,19 @@ export function ResetPasswordForm({
   ...props
 }: ResetPasswordProps) {
   const navigate = useNavigate()
+  function isValidPassword(password: string): boolean {
+      const minLength = /.{8,}/;
+      const hasUpperCase = /[A-Z]/;
+      const hasNumber = /\d/;
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+      return (
+          minLength.test(password) &&
+          hasUpperCase.test(password) &&
+          hasNumber.test(password) &&
+          hasSpecialChar.test(password)
+      );
+  }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form 
@@ -79,6 +93,21 @@ export function ResetPasswordForm({
                   onChange={(e) => setPassword(e.target.value)}
                 />
             </div>
+            {password && !isValidPassword(password) && (
+              <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Invalid Password</AlertTitle>
+                  <AlertDescription>
+                  Password must:
+                  <ul className="list-disc list-inside">
+                      <li>Be at least 8 characters</li>
+                      <li>Contain at least one uppercase letter</li>
+                      <li>Include at least one number</li>
+                      <li>Include at least one special character</li>
+                  </ul>
+                  </AlertDescription>
+              </Alert>
+            )}
             <div className="grid gap-3">
               <Label htmlFor="password">Repeat New Password:</Label>
               <Input
@@ -89,6 +118,12 @@ export function ResetPasswordForm({
                   onChange={(e) => setPassword1(e.target.value)}
                 />
             </div>
+            {password1 && password != password1 && (
+              <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Passwords Should Match</AlertTitle>
+              </Alert>
+            )}
             <Button type="submit" className="w-full">
               Reset Password
             </Button>

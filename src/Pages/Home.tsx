@@ -5,6 +5,7 @@ import { getCurrentUser, signOut } from '@aws-amplify/auth'
 import toast from "react-hot-toast";
 
 
+
 export default function Home(){
     const navigate = useNavigate()
 

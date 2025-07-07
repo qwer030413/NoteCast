@@ -18,6 +18,8 @@ import UserPool from "@/aws/UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react";
 
 export default function SignUp(){
     const [Email, setEmail] = useState("")
@@ -25,7 +27,19 @@ export default function SignUp(){
     const [Password2, setPassword2] = useState("")
     const [Username, setUsername] = useState("")
     const navigate = useNavigate()
+    function isValidPassword(password: string): boolean {
+        const minLength = /.{8,}/;
+        const hasUpperCase = /[A-Z]/;
+        const hasNumber = /\d/;
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
 
+        return (
+            minLength.test(password) &&
+            hasUpperCase.test(password) &&
+            hasNumber.test(password) &&
+            hasSpecialChar.test(password)
+        );
+    }
     const handleSignUp = () =>{
         if(Password != Password2){
             toast(`Passwords has to match!!`,
@@ -124,6 +138,21 @@ export default function SignUp(){
                         />
                         
                     </div>
+                    {Password && !isValidPassword(Password) && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Invalid Password</AlertTitle>
+                        <AlertDescription>
+                        Password must:
+                        <ul className="list-disc list-inside">
+                            <li>Be at least 8 characters</li>
+                            <li>Contain at least one uppercase letter</li>
+                            <li>Include at least one number</li>
+                            <li>Include at least one special character</li>
+                        </ul>
+                        </AlertDescription>
+                    </Alert>
+                    )}
                     <div className="grid gap-2">
                         <div className="flex items-center">
                             <Label htmlFor="password">Retype Password</Label>
@@ -137,10 +166,17 @@ export default function SignUp(){
                         />
                     
                     </div>
+                    {Password2 && Password != Password2 && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Passwords Should Match</AlertTitle>
+                    </Alert>
+                    )}
                 </div>
                 </form>
             </CardContent>
             <CardFooter className="flex-col gap-2">
+                
                 <Button type="submit" className="w-full" onClick={() => handleSignUp()}>
                 Sign Up
                 </Button>
