@@ -7,6 +7,7 @@ import { AuthRoute } from './components/UserAuth/AuthRoute';
 import { Toaster } from 'react-hot-toast';
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
+import Layout from './Pages/Layout';
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
         path = "/"
         element = {
           <AuthRoute>
+          <Layout>
             <Home /> 
+          </Layout>            
           </AuthRoute>
         } 
       />
