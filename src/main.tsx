@@ -25,7 +25,7 @@ Amplify.configure({
   Storage: {
     S3: {
       bucket: 'note-cast-user',
-      region: 'us-east-2'
+      region: 'us-east-2',
     }
   }
 })

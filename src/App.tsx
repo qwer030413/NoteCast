@@ -12,6 +12,7 @@ import Notes from './Pages/Notes';
 import Podcasts from './Pages/Podcasts';
 import Summerize from './Pages/Summerize';
 import Settings from './Pages/Settings';
+import Account from './Pages/Account';
 
 function App() {
   return (
@@ -67,7 +68,15 @@ function App() {
           </AuthRoute>
         } 
       />
-      
+      <Route path = "/Account"
+        element = {
+          <AuthRoute>
+          <Layout>
+            <Account /> 
+          </Layout>            
+          </AuthRoute>
+        } 
+      />
     </Routes>
     </>
   )

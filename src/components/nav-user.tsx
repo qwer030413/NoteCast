@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   AvatarFallback,
@@ -36,7 +37,7 @@ interface NavUserProps {
 
 export function NavUser({ user, signout }: NavUserProps) {
   const { isMobile } = useSidebar()
-
+  const navigate = useNavigate()
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -84,9 +85,9 @@ export function NavUser({ user, signout }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect = {() => navigate('/Account')}>
                 <BadgeCheck />
-                Account
+                  Account
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
@@ -98,12 +99,9 @@ export function NavUser({ user, signout }: NavUserProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={signout}>
               <LogOut />
-              <button onClick={signout}>
                 Log out
-              </button>
-              {/* Log out */}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
