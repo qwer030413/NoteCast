@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 export function AppSidebar() {
   const navigate = useNavigate()
-  const [data, setData] = useState<{ name: string, email: string }>({ name: "", email: "" })
+  const [data, setData] = useState<{ name: string, email: string, profilePicture: string}>({ name: "", email: "", profilePicture:"" })
   useEffect(() => {
     getCurrentUser()
       .then(async (user) => {

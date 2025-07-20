@@ -6,10 +6,15 @@ import toast from "react-hot-toast";
 import { getUrl, uploadData } from "@aws-amplify/storage";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 import { fetchAuthSession } from '@aws-amplify/auth';
 import { PollyClient, SynthesizeSpeechCommand, DescribeVoicesCommand} from "@aws-sdk/client-polly";
+import { useRef } from "react";
+import { Loader2Icon } from "lucide-react"
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+
 
 import {
   Dialog,
@@ -22,6 +27,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import DropDownMenu from "@/components/dropdownMenu";
+import SideChart from "@/components/sideChart";
+import RecentPodcasts from "@/components/recentPodcasts";
 
 
 
@@ -34,29 +41,39 @@ export default function Home(){
     const [user, setUser] = useState("")
     const [dynamoClient, setDynamoClient] = useState<DynamoDBClient | null>(null);
     const [pollyClient, setPollyClient] = useState<PollyClient | null>(null);
+    const [s3Client, setS3Client] = useState<S3Client | null>(null);
+    const dialogCloseRef = useRef<HTMLButtonElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [files, setFiles] = useState<Record<string, AttributeValue>[]>([])
+    const [podcasts, setPodcasts] = useState<Record<string, AttributeValue>[]>([])
+    const [uploadTrigger, setUploadTrigger] = useState(0);
+
+    const [categoryStats, setCategoryStats] = useState<
+    { category: string; count: number; fill: string }[]
+    >([]);
     const categories = [
         {
-            value: "class work",
+            value: "Class Work",
             label: "Class Work",
         },
         {
-            value: "personal notes",
+            value: "Personal notes",
             label: "Personal Notes",
         },
         {
-            value: "lecture notes",
+            value: "Lecture notes",
             label: "Lecture Notes",
         },
         {
-            value: "meeting notes",
+            value: "Meeting notes",
             label: "Meeting Notes",
         },
         {
-            value: "journal",
+            value: "Journal",
             label: "Journal",
         },
         {
-            value: "book summaries",
+            value: "Book summaries",
             label: "Book Summaries",
         }
     ]
@@ -104,8 +121,17 @@ export default function Home(){
                 sessionToken: credentials.sessionToken,
                 },
             });
+            const s3Client = new S3Client({
+                region: 'us-east-2',
+                credentials: {
+                accessKeyId: credentials.accessKeyId,
+                secretAccessKey: credentials.secretAccessKey,
+                sessionToken: credentials.sessionToken,
+                },
+            })
             setPollyClient(pollyClient)
             setDynamoClient(client);
+            setS3Client(s3Client)
         } catch (err) {
             console.error("Failed to configure DynamoDB client:", err);
         }
@@ -115,22 +141,90 @@ export default function Home(){
     }, []);
     useEffect(() => {
         getCurrentUser()
-        .then((user) => {
-            setUser(user.username)
-            console.log("Logged in user:", user)
-            toast(`Welcome ${user.username}!`,
-                {
-                    icon: '👋',
-                    style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                    },
-                }
+            .then((user) => {
+                setUser(user.username)
+                console.log("Logged in user:", user)
+                toast(`Welcome ${user.username}!`,
+                    {
+                        icon: '👋',
+                        style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                        },
+                    }
+                );
+            })
+            .catch(() => console.log("Not signed in"))
+        }, [])
+
+    useEffect(() => {
+        if (!user || !dynamoClient) return;
+
+        const fetchFiles = async () => {
+            try {
+            const command = new QueryCommand({
+                TableName: "UserFiles",
+                KeyConditionExpression: "userName = :user",
+                ExpressionAttributeValues: {
+                ":user": { S: user },
+                },
+            });
+            const podcastCommand = new QueryCommand({
+                TableName: "UserPodcasts",
+                KeyConditionExpression: "userName = :user",
+                ExpressionAttributeValues: {
+                ":user": { S: user },
+                },
+            });
+            const podcastResponse = await dynamoClient.send(podcastCommand);
+            const response = await dynamoClient.send(command);
+            setFiles(response.Items || []);
+            setPodcasts(podcastResponse.Items || [])
+            } catch (err) {
+            console.error("Failed to fetch files", err);
+            }
+        };
+
+        fetchFiles();
+    }, [user, dynamoClient, uploadTrigger]);
+
+
+    useEffect(() => {
+        const transformData = () => {
+            if (!files) return;
+
+            const blueShades = [
+            "#60a5fa", // blue-400
+            "#3b82f6", // blue-500
+            "#2563eb", // blue-600
+            "#1d4ed8", // blue-700
+            "#1e40af", // blue-800
+            "#1e3a8a", // blue-900
+            ];
+
+            const categoryCountsMap = new Map<string, number>();
+
+            files.forEach((item) => {
+            const category = item.category?.S ?? "Uncategorized";
+            categoryCountsMap.set(category, (categoryCountsMap.get(category) ?? 0) + 1);
+            });
+
+            const transformed = Array.from(categoryCountsMap.entries()).map(
+            ([category, count], index) => ({
+                category,
+                count,
+                fill: blueShades[index],
+            })
             );
-        })
-        .catch(() => console.log("Not signed in"))
-    }, [])
+
+            setCategoryStats(transformed);
+        };
+
+    transformData();
+    }, [files]);
+
+
     const fetchVoices = async (engine: "standard"|"neural") => {
         const command = new DescribeVoicesCommand({
             Engine : engine
@@ -162,14 +256,17 @@ export default function Home(){
         };
         loadVoices();
     }, [engine, pollyClient])
+
+
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsUploading(true)
         const formData = new FormData(e.currentTarget);
         const username = user
         const fileNameEntry = formData.get("name");
         const fileName = typeof fileNameEntry === "string" ? fileNameEntry : "";
         const file = formData.get("file") as File;
-        console.log(file)
+        const fileNameActual = file.name
         if (!username || !file || !fileName) {
             toast.error("Please fill in all fields.");
             return;
@@ -181,7 +278,7 @@ export default function Home(){
         const noteId = uuidv4();
         const podcastId = uuidv4();
         const key = `notes/${username}/${noteId}.txt`;
-        const audioKey = `audio/${username}/${noteId}.mp3`;
+        const audioKey = `audio/${username}/${podcastId}.mp3`;
 
         try {
             // Upload file to S3
@@ -194,8 +291,8 @@ export default function Home(){
             },
             }).result;
 
-            const { url } = await getUrl({ key, options: { accessLevel: 'private' } });
-            const { url: audioUrl } = await getUrl({ key: audioKey, options: { accessLevel: "private" } });
+            // const { url } = await getUrl({ key, options: { accessLevel: 'private' } });
+            // const { url: audioUrl } = await getUrl({ key: audioKey, options: { accessLevel: "private" } });
             const fileText = await file.text();
             const pollyCommand = new SynthesizeSpeechCommand({
                 OutputFormat: "mp3",
@@ -223,10 +320,10 @@ export default function Home(){
             Item: {
                 fileId: { S: noteId },
                 userName: { S: username },
-                s3Url: { S: url.toString() },
                 fileName: { S: fileName },
+                fileNameActual: {S: fileNameActual},
                 createdAt:  { S: new Date().toISOString() },
-                audioUrl: { S: audioUrl.toString() },
+                category: {S: categoryValue}
             },
             });
             const AudioCommand = new PutItemCommand({
@@ -234,18 +331,29 @@ export default function Home(){
             Item: {
                 podcastId: { S: podcastId },
                 userName: { S: username },
-                s3Url: { S: audioUrl.toString() },
-                fileName: { S: fileName },
+                podcastName: { S: fileName },
                 createdAt:  { S: new Date().toISOString() },
-                fileUrl: { S: url.toString() },
+                category: {S: categoryValue},
+                engine: {S:engine},
+                voice : {S:voice}
             },
             });
             await dynamoClient.send(command);
             await dynamoClient.send(AudioCommand);
             toast.success("Note uploaded and saved successfully!");
+            setUploadTrigger(prev => prev + 1);
+            
         } catch (err) {
             console.error("Upload error:", err);
             toast.error("Upload failed");
+        } finally {
+            if (dialogCloseRef.current) {
+                dialogCloseRef.current.click();
+            }
+            setIsUploading(false)
+            setEngine("standard")
+            setVoice("")
+            setCategoryValue("")
         }
         };
     return(
@@ -287,31 +395,36 @@ export default function Home(){
                                 </div>
                                 <div className="grid gap-3">
                                     <Label htmlFor="name-1">Voice</Label>
-                                    <DropDownMenu value = {voice} categories = {voices} setValue = {setVoice} name = {"Select Category..."} search = {"Search Categories.."} notFound = {"No Category Found"}/>
+                                    <DropDownMenu value = {voice} categories = {voices} setValue = {setVoice} name = {"Select Voice..."} search = {"Search Voices.."} notFound = {"No Voice Found"}/>
                                 </div>
                             </div>
                             
                             <DialogFooter>
                                 <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
+                                <Button variant="outline" ref={dialogCloseRef}>Cancel</Button>
                                 </DialogClose>
+                                {isUploading ? (
+                                <Button size="sm" disabled>
+                                <Loader2Icon className="animate-spin" />
+                                Uploading
+                                </Button>
+                                ) : (
                                 <Button type="submit">Upload File</Button>
+                                )}
                             </DialogFooter>
                             </form>
                             </DialogContent>
                         
                         </Dialog>
                 </div>
-                <div>Boxes</div>
+                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client}/>
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg">Recent Uploads</h1>
                     
                 </div>
 
             </div>
-            <div className="w-[300px] min-w-[250px] bg-muted p-4 rounded-lg shadow">
-            chart
-            </div>
+            <SideChart categoryStats = {categoryStats}/>
         </div>
     );
 }
