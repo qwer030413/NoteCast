@@ -1,8 +1,10 @@
+import { useState } from "react";
 import PodcastCard from "./podcastCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import ViewItemDialog from "./viewItemDialog";
 
 
 export default function RecentPodcasts(props:any){
-    console.log(props.podcasts)
     function simplifyDynamoItem(item: any) {
         return {
             podcastId: item.podcastId?.S,
@@ -15,11 +17,33 @@ export default function RecentPodcasts(props:any){
         };
     }
     const simplified = props.podcasts?.slice(0, 6).map(simplifyDynamoItem);
+    const isLoading = !props.podcasts || props.podcasts.length === 0;
+    const renderSkeletonCard = () => (
+        <div className="p-6 border rounded-lg shadow bg-card w-[30%] h-60 min-w-89 cursor-pointer">
+            <div className="flex flex-row justify-between">
+                <Skeleton className="h-15 w-15 rounded-sm mt-4" />
+                <Skeleton className="h-8 w-4" />
+            </div>
+
+            <Skeleton className="h-6 w-3/4 mt-6" />
+
+            <div className="flex flex-row mt-6 gap-2 items-center">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-16" />
+            </div>
+        </div>
+    );
     return(
-        <div className="w-[100%] p-5 flex flex-wrap gap-4">
-            {simplified.map((podcast: any, index: number) => (
-                <PodcastCard key={index} data={podcast} s3Client = {props.s3Client} user={props.user}/>
-            ))}
+        <div className="w-full p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6">
+
+            {isLoading
+                ? [...Array(6)].map((_, index) => (
+                      <div key={index}>{renderSkeletonCard()}</div>
+                  ))
+                : simplified.map((podcast: any, index: number) => (
+                    <ViewItemDialog key={index} data={podcast}  s3Client={props.s3Client} user={props.user}/>
+                  ))}
         </div>
     );
 }
