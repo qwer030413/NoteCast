@@ -52,48 +52,18 @@ export default function Home(){
     { category: string; count: number; fill: string }[]
     >([]);
     const categories = [
-        {
-            value: "Class Work",
-            label: "Class Work",
-        },
-        {
-            value: "Personal notes",
-            label: "Personal Notes",
-        },
-        {
-            value: "Lecture notes",
-            label: "Lecture Notes",
-        },
-        {
-            value: "Meeting notes",
-            label: "Meeting Notes",
-        },
-        {
-            value: "Journal",
-            label: "Journal",
-        },
-        {
-            value: "Book summaries",
-            label: "Book Summaries",
-        }
-    ]
+        { value: "Class Work", label: "Class Work" },
+        { value: "Personal Notes", label: "Personal Notes" },
+        { value: "Lecture Notes", label: "Lecture Notes" },
+        { value: "Meeting Notes", label: "Meeting Notes" },
+        { value: "Journal", label: "Journal" },
+        { value: "Book Summaries", label: "Book Summaries" },
+    ];
     const engines = [
-        {
-            value: "standard",
-            label: "Standard",
-        },
-        {
-            value: "neural",
-            label: "Neural: More natural ",
-        },
-        {
-            value: "long-form",
-            label: "Long-Form: Natural speech for longer text",
-        },
-        {
-            value: "generative",
-            label: "Generative: Expressive and adaptive speech",
-        },
+        { value: "standard", label: "Standard" },
+        { value: "neural", label: "Neural: More natural" },
+        { value: "long-form", label: "Long-Form: Natural speech for longer text" },
+        { value: "generative", label: "Generative: Expressive and adaptive speech" },
     ]
     useEffect(() => {
     const setUpClient = async () => {
@@ -224,7 +194,19 @@ export default function Home(){
     transformData();
     }, [files]);
 
-
+    const updatePodcast = (podcastId: string, newName: string, newCategory: string) => {
+        setPodcasts(prev =>
+            prev.map(podcast =>
+            podcast.podcastId?.S === podcastId
+                ? {
+                    ...podcast,
+                    podcastName: { S: newName },
+                    category: { S: newCategory },
+                }
+                : podcast
+            )
+        );
+    };
     const fetchVoices = async (engine: "standard"|"neural") => {
         const command = new DescribeVoicesCommand({
             Engine : engine
@@ -417,7 +399,7 @@ export default function Home(){
                         
                         </Dialog>
                 </div>
-                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client}/>
+                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} />
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg">Recent Uploads</h1>
                     

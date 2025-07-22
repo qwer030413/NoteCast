@@ -18,7 +18,7 @@ export default function PodcastCard(props:any){
             </svg>
             </div>
         ),
-        "Personal notes": (
+        "Personal Notes": (
             <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
             <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#588157"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-user">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -27,7 +27,7 @@ export default function PodcastCard(props:any){
             </svg>
             </div>
         ),
-        "Lecture notes": (
+        "Lecture Notes": (
             <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
             <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#f9dc5c"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-device-laptop">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -36,7 +36,7 @@ export default function PodcastCard(props:any){
             </svg>
             </div>
         ),
-        "Meeting notes": (
+        "Meeting Notes": (
             <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
             <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#4361ee"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-users"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
@@ -56,7 +56,7 @@ export default function PodcastCard(props:any){
             </svg>
             </div>
         ),
-        "Book summaries": (
+        "Book Summaries": (
             <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
             <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#48cae4"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-book"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
@@ -84,14 +84,13 @@ export default function PodcastCard(props:any){
 
         generateUrl();
     }, [props.data]);
-    console.log(props)
     return(
         
         <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer">
             {/* <audio controls className="w-full bg-card rounded-lg" src={signedUrl} /> */}
             <div className="flex flex-row w-[100%] justify-between">
                 {categoryIcons[props.data.category]}
-                <PostcardPopover podcastName = {props.data.podcastName} category = {props.data.category}/>
+                <PostcardPopover podcastName = {props.data.podcastName} category = {props.data.category} dynamoClient = {props.dynamoClient} user = {props.user} podcastId = {props.data.podcastId} updatePodcast = {props.updatePodcast}/>
             </div>
             <h1 className="text-lg font-bold mt-6">{props.data.podcastName}</h1>
             <div className="flex flex-row mt-6 gap-2 item-center">

@@ -1,0 +1,45 @@
+/* Main container */
+.rhap_container {
+  background-color: oklch(0.21 0.006 285.885);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(30, 29, 29, 0.7);
+}
+
+/* Play/pause button */
+.rhap_play-pause-button {
+  color: white;
+}
+
+/* Current time and duration */
+.rhap_time {
+  color: white;
+}
+
+/* Progress bar container */
+.rhap_progress-bar {
+  background-color: #444;
+}
+
+/* Played progress (filled part) */
+.rhap_progress-indicator,
+.rhap_progress-filled {
+  background-color: #0ea5e9; /* Tailwind 'sky-500' blue */
+}
+
+/* Downloadable appearance */
+.rhap_download-progress {
+  background-color: #888;
+}
+
+/* Volume controls */
+.rhap_volume-bar {
+  background-color: #444;
+}
+
+.rhap_volume-indicator {
+  background-color: white;
+}
+
+.rhap_volume-button:hover {
+  color: #0ea5e9;
+}
