@@ -1,12 +1,10 @@
 
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { useEffect, useState, type JSX } from "react";
-import {GetObjectCommand } from "@aws-sdk/client-s3";
+import {useState, type JSX } from "react";
 import PostcardPopover from "./podcastCardPopover";
-import ViewItemDialog from "./viewItemDialog";
 
 export default function PodcastCard(props:any){
-    const [signedUrl, setSignedUrl] = useState("");
+    // const [signedUrl, setSignedUrl] = useState("");
+    const s3Key = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`
 
     const categoryIcons: Record<string, JSX.Element> = {
         "Class Work": (
@@ -67,30 +65,40 @@ export default function PodcastCard(props:any){
             </div>
         )
     };
-    useEffect(() => {
-        async function generateUrl() {
-            try {
-                const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
-                const command = new GetObjectCommand({
-                    Bucket: "note-cast-user",
-                    Key: audioKey,
-                });
-                const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
-                setSignedUrl(signedUrl)
-            } catch (error) {
-                console.error("Error generating signed URL", error);
-            }
-        }
+    // useEffect(() => {
+    //     async function generateUrl() {
+    //         try {
+    //             const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
+    //             const command = new GetObjectCommand({
+    //                 Bucket: "note-cast-user",
+    //                 Key: audioKey,
+    //             });
+    //             const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
+    //             // setSignedUrl(signedUrl)
+    //         } catch (error) {
+    //             console.error("Error generating signed URL", error);
+    //         }
+    //     }
 
-        generateUrl();
-    }, [props.data]);
+    //     generateUrl();
+    // }, [props.data]);
     return(
         
         <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer">
             {/* <audio controls className="w-full bg-card rounded-lg" src={signedUrl} /> */}
             <div className="flex flex-row w-[100%] justify-between">
                 {categoryIcons[props.data.category]}
-                <PostcardPopover podcastName = {props.data.podcastName} category = {props.data.category} dynamoClient = {props.dynamoClient} user = {props.user} podcastId = {props.data.podcastId} updatePodcast = {props.updatePodcast}/>
+                <PostcardPopover 
+                podcastName = {props.data.podcastName} 
+                category = {props.data.category} 
+                dynamoClient = {props.dynamoClient} 
+                user = {props.user} 
+                podcastId = {props.data.podcastId} 
+                updatePodcast = {props.updatePodcast} 
+                deletePodcast = {props.deletePodcast}
+                s3Client = {props.s3Client}
+                s3Key = {s3Key}
+                />
             </div>
             <h1 className="text-lg font-bold mt-6">{props.data.podcastName}</h1>
             <div className="flex flex-row mt-6 gap-2 item-center">

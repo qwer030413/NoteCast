@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/popover"
 import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { UpdateItemCommand, DeleteItemCommand   } from "@aws-sdk/client-dynamodb";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 export default function PostcardPopover(props:any) {
   const [category,setCategory] = useState(props.category)
@@ -41,6 +42,32 @@ export default function PostcardPopover(props:any) {
       return response;
     } catch (err) {
       console.error("Error updating podcast:", err);
+      throw err;
+    }
+  }
+
+  async function deletePodcast(user:string, podcastId: string, s3Key: string) {
+    try {
+      const s3Delete = new DeleteObjectCommand({
+        Bucket: "note-cast-user",
+        Key: s3Key
+      });
+      await props.s3Client.send(s3Delete);
+      console.log("Deleted from S3:", s3Key);
+      const dbDelete = new DeleteItemCommand({
+        TableName: "UserPodcasts",
+        Key: {
+          userName: { S: user },
+          podcastId: { S: podcastId },
+        },
+      });
+      await props.dynamoClient.send(dbDelete);
+      console.log("Deleted from DynamoDB:", podcastId);
+      props.deletePodcast(props.podcastId)
+      setOpen(false)
+      return { success: true };
+    } catch (err) {
+      console.error("Failed to delete podcast:", err);
       throw err;
     }
   }
@@ -80,7 +107,7 @@ export default function PostcardPopover(props:any) {
               <DropDownMenu value = {category} categories = {categories} setValue = {setCategory} name = {"Select Category..."} search = {"Search Categories.."} notFound = {"No Category Found"} className="col-span-2"/>
             </div>
           </div>
-          <Button variant="destructive">Delete Podcast</Button>
+          <Button variant="destructive" onClick={() => deletePodcast(props.user, props.podcastId, props.s3Key)}>Delete Podcast</Button>
           <Button variant="secondary" onClick={() => updatePodcast(props.user, name, category)}>Save Changes</Button>
         </div>
       </PopoverContent>

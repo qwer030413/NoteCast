@@ -41,7 +41,7 @@ export default function RecentPodcasts(props:any){
                       <div key={index}>{renderSkeletonCard()}</div>
                   ))
                 : simplified.map((podcast: any, index: number) => (
-                    <ViewItemDialog key={index} data={podcast}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast}/>
+                    <ViewItemDialog key={index} data={podcast}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
                   ))}
         </div>
     );

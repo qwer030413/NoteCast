@@ -207,6 +207,10 @@ export default function Home(){
             )
         );
     };
+
+    const deletePodcast = (podcastId : string) => {
+        setPodcasts(prev => prev.filter(podcast => podcast.podcastId?.S !== podcastId));
+    }
     const fetchVoices = async (engine: "standard"|"neural") => {
         const command = new DescribeVoicesCommand({
             Engine : engine
@@ -242,14 +246,13 @@ export default function Home(){
 
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsUploading(true)
         const formData = new FormData(e.currentTarget);
         const username = user
         const fileNameEntry = formData.get("name");
         const fileName = typeof fileNameEntry === "string" ? fileNameEntry : "";
         const file = formData.get("file") as File;
         const fileNameActual = file.name
-        if (!username || !file || !fileName) {
+        if (!username || !fileName || !categoryValue || !voice || file.name.trim() == '' || !file) {
             toast.error("Please fill in all fields.");
             return;
         }
@@ -261,7 +264,7 @@ export default function Home(){
         const podcastId = uuidv4();
         const key = `notes/${username}/${noteId}.txt`;
         const audioKey = `audio/${username}/${podcastId}.mp3`;
-
+        setIsUploading(true)
         try {
             // Upload file to S3
             await uploadData({
@@ -399,7 +402,7 @@ export default function Home(){
                         
                         </Dialog>
                 </div>
-                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} />
+                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} deletePodcast = {deletePodcast}/>
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg">Recent Uploads</h1>
                     

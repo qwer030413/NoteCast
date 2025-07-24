@@ -43,7 +43,7 @@ export default function ViewItemDialog(props:any) {
       <form>
         <DialogTrigger asChild>
         <div className="">
-            <PodcastCard  data={props.data}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast}/>
+            <PodcastCard  data={props.data}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
         </div>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
