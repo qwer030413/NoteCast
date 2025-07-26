@@ -47,6 +47,7 @@ export default function Home(){
     const [files, setFiles] = useState<Record<string, AttributeValue>[]>([])
     const [podcasts, setPodcasts] = useState<Record<string, AttributeValue>[]>([])
     const [uploadTrigger, setUploadTrigger] = useState(0);
+    const [loadingPodcasts, setLoadingPodcasts] = useState(true);
 
     const [categoryStats, setCategoryStats] = useState<
     { category: string; count: number; fill: string }[]
@@ -133,26 +134,38 @@ export default function Home(){
 
         const fetchFiles = async () => {
             try {
-            const command = new QueryCommand({
-                TableName: "UserFiles",
-                KeyConditionExpression: "userName = :user",
-                ExpressionAttributeValues: {
-                ":user": { S: user },
-                },
-            });
-            const podcastCommand = new QueryCommand({
-                TableName: "UserPodcasts",
-                KeyConditionExpression: "userName = :user",
-                ExpressionAttributeValues: {
-                ":user": { S: user },
-                },
-            });
-            const podcastResponse = await dynamoClient.send(podcastCommand);
-            const response = await dynamoClient.send(command);
-            setFiles(response.Items || []);
-            setPodcasts(podcastResponse.Items || [])
-            } catch (err) {
-            console.error("Failed to fetch files", err);
+                setLoadingPodcasts(true);
+                const command = new QueryCommand({
+                    TableName: "UserFiles",
+                    KeyConditionExpression: "userName = :user",
+                    ExpressionAttributeValues: {
+                    ":user": { S: user },
+                    },
+                });
+                const podcastCommand = new QueryCommand({
+                    TableName: "UserPodcasts",
+                    KeyConditionExpression: "userName = :user",
+                    ExpressionAttributeValues: {
+                    ":user": { S: user },
+                    },
+                });
+                const podcastResponse = await dynamoClient.send(podcastCommand);
+                const response = await dynamoClient.send(command);
+                const sortedFiles = (response.Items || []).sort((a, b) => {
+                    return new Date(b.createdAt?.S || 0).getTime() - new Date(a.createdAt?.S || 0).getTime();
+                });
+
+                const sortedPodcasts = (podcastResponse.Items || []).sort((a, b) => {
+                    return new Date(b.createdAt?.S || 0).getTime() - new Date(a.createdAt?.S || 0).getTime();
+                });
+                setFiles(sortedFiles);
+                setPodcasts(sortedPodcasts)
+            } 
+            catch (err) {
+                console.error("Failed to fetch files", err);
+            }
+            finally{
+                setLoadingPodcasts(false);
             }
         };
 
@@ -394,7 +407,14 @@ export default function Home(){
                                 Uploading
                                 </Button>
                                 ) : (
-                                <Button type="submit">Upload File</Button>
+                                <Button type="submit" >
+                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                <path d="M7 9l5 -5l5 5" />
+                                <path d="M12 4l0 12" />
+                                </svg>
+                                Upload File</Button>
                                 )}
                             </DialogFooter>
                             </form>
@@ -402,7 +422,7 @@ export default function Home(){
                         
                         </Dialog>
                 </div>
-                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} deletePodcast = {deletePodcast}/>
+                <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} deletePodcast = {deletePodcast} loading={loadingPodcasts}/>
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg">Recent Uploads</h1>
                     

@@ -1,8 +1,9 @@
 /* Main container */
 .rhap_container {
-  background-color: oklch(0.21 0.006 285.885);
+  background-color: oklch(21.033% 0.00588 285.832);
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(30, 29, 29, 0.7);
+  border: none
 }
 
 /* Play/pause button */

@@ -16,7 +16,8 @@ export default function RecentPodcasts(props:any){
         };
     }
     const simplified = props.podcasts?.slice(0, 6).map(simplifyDynamoItem);
-    const isLoading = !props.podcasts || props.podcasts.length === 0;
+    const isLoading = props.loading;
+    const isEmpty = !isLoading && simplified.length === 0;
     const renderSkeletonCard = () => (
         <div className="p-6 border rounded-lg shadow bg-card w-[30%] h-60 min-w-89 cursor-pointer">
             <div className="flex flex-row justify-between">
@@ -40,6 +41,11 @@ export default function RecentPodcasts(props:any){
                 ? [...Array(6)].map((_, index) => (
                       <div key={index}>{renderSkeletonCard()}</div>
                   ))
+                : isEmpty ? (
+                    <p className="text-gray-500 text-sm col-span-3 text-center h-100 flex items-center justify-center">
+                        No podcasts to show.
+                    </p>
+                )
                 : simplified.map((podcast: any, index: number) => (
                     <ViewItemDialog key={index} data={podcast}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
                   ))}
