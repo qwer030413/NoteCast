@@ -1,9 +1,8 @@
 
-import {useState, type JSX } from "react";
+import {type JSX } from "react";
 import PostcardPopover from "./podcastCardPopover";
 
 export default function PodcastCard(props:any){
-    // const [signedUrl, setSignedUrl] = useState("");
     const s3Key = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`
 
     const categoryIcons: Record<string, JSX.Element> = {
@@ -65,23 +64,6 @@ export default function PodcastCard(props:any){
             </div>
         )
     };
-    // useEffect(() => {
-    //     async function generateUrl() {
-    //         try {
-    //             const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
-    //             const command = new GetObjectCommand({
-    //                 Bucket: "note-cast-user",
-    //                 Key: audioKey,
-    //             });
-    //             const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
-    //             // setSignedUrl(signedUrl)
-    //         } catch (error) {
-    //             console.error("Error generating signed URL", error);
-    //         }
-    //     }
-
-    //     generateUrl();
-    // }, [props.data]);
     return(
         
         <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer">

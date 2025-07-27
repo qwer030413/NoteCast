@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import DropDownMenu from "@/components/dropdownMenu";
+import DropDownMenu from "@/components/podcastCards/dropdownMenu";
 
 import {
   Popover,

@@ -1,4 +1,4 @@
-import { ForgotPasswordForm } from "@/components/ForgotPasswordForm"
+import { ForgotPasswordForm } from "@/components/login/ForgotPasswordForm"
 import { resetPassword } from 'aws-amplify/auth';
 import { useState } from "react";
 import toast from "react-hot-toast";

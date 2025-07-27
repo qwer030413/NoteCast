@@ -9,11 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
-import "./components.css"
+import "../components.css"
 import PodcastCard from "./podcastCard"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { useEffect, useState, type JSX } from "react";
@@ -42,7 +40,7 @@ export default function ViewItemDialog(props:any) {
     <Dialog>
       <form>
         <DialogTrigger asChild>
-        <div className="">
+        <div>
             <PodcastCard  data={props.data}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
         </div>
         </DialogTrigger>
@@ -54,11 +52,6 @@ export default function ViewItemDialog(props:any) {
             </DialogDescription>
           </DialogHeader>
             <div className="grid gap-4">
-                    {/* <audio
-                    controls
-                    src={signedUrl}
-                    className="w-full rounded-md outline-none"
-                    /> */}
                     <AudioPlayer
                     src={signedUrl}
                     showJumpControls={false}

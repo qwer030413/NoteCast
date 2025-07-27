@@ -26,9 +26,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import DropDownMenu from "@/components/dropdownMenu";
+import DropDownMenu from "@/components/podcastCards/dropdownMenu";
 import SideChart from "@/components/sideChart";
-import RecentPodcasts from "@/components/recentPodcasts";
+import RecentPodcasts from "@/components/podcastCards/recentPodcasts";
+import RecentFiles from "@/components/FileList/recentFiles";
 
 
 
@@ -114,7 +115,6 @@ export default function Home(){
         getCurrentUser()
             .then((user) => {
                 setUser(user.username)
-                console.log("Logged in user:", user)
                 toast(`Welcome ${user.username}!`,
                     {
                         icon: '👋',
@@ -233,7 +233,6 @@ export default function Home(){
         }
         try{
             const data = await pollyClient.send(command)
-            console.log(data)
             return data.Voices || []
         }
         catch(err){
@@ -358,74 +357,73 @@ export default function Home(){
         <div className="flex w-full h-full">
             <div className="flex-1 p-10 overflow-auto">
                 <div className="flex justify-between items-center align-center">
-                    <h1 className="text-lg">Recent Podcasts</h1>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                            <Button variant="default" className="p-7 text-md w-60">
-                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
-                                Add New File
-                            </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle>Add File</DialogTitle>
-                                <DialogDescription>
-                                Upload new files for Note Cast to convert into podcasts!
-                                </DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleUpload}>
-                            <div className="grid gap-4 mb-6">
-                                <div className="grid gap-3">
-                                <Label htmlFor="name-1">Name</Label>
-                                <Input id="name" name="name"/>
-                                </div>
-                                <div className="grid gap-3">
-                                <Label htmlFor="file">File</Label>
-                                <Input id="file" type="file" name="file" />
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="name-1">Category</Label>
-                                    <DropDownMenu value = {categoryValue} categories = {categories} setValue = {setCategoryValue} name = {"Select Category..."} search = {"Search Categories.."} notFound = {"No Category Found"}/>
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="name-1">Engine</Label>
-                                    <DropDownMenu value = {engine} categories = {engines} setValue = {setEngine} name = {"Select Engine..."} search = {"Search Engines.."} notFound = {"No Engine Found"}/>
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="name-1">Voice</Label>
-                                    <DropDownMenu value = {voice} categories = {voices} setValue = {setVoice} name = {"Select Voice..."} search = {"Search Voices.."} notFound = {"No Voice Found"}/>
-                                </div>
+                    <h1 className="text-lg font-bold">Recent Podcasts</h1>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                        <Button variant="default" className="p-7 text-md w-60">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
+                            Add New File
+                        </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Add File</DialogTitle>
+                            <DialogDescription>
+                            Upload new files for Note Cast to convert into podcasts!
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleUpload}>
+                        <div className="grid gap-4 mb-6">
+                            <div className="grid gap-3">
+                            <Label htmlFor="name-1">Name</Label>
+                            <Input id="name" name="name"/>
                             </div>
-                            
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                <Button variant="outline" ref={dialogCloseRef}>Cancel</Button>
-                                </DialogClose>
-                                {isUploading ? (
-                                <Button size="sm" disabled>
-                                <Loader2Icon className="animate-spin" />
-                                Uploading
-                                </Button>
-                                ) : (
-                                <Button type="submit" >
-                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                <path d="M7 9l5 -5l5 5" />
-                                <path d="M12 4l0 12" />
-                                </svg>
-                                Upload File</Button>
-                                )}
-                            </DialogFooter>
-                            </form>
-                            </DialogContent>
+                            <div className="grid gap-3">
+                            <Label htmlFor="file">File</Label>
+                            <Input id="file" type="file" name="file" />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="name-1">Category</Label>
+                                <DropDownMenu value = {categoryValue} categories = {categories} setValue = {setCategoryValue} name = {"Select Category..."} search = {"Search Categories.."} notFound = {"No Category Found"}/>
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="name-1">Engine</Label>
+                                <DropDownMenu value = {engine} categories = {engines} setValue = {setEngine} name = {"Select Engine..."} search = {"Search Engines.."} notFound = {"No Engine Found"}/>
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="name-1">Voice</Label>
+                                <DropDownMenu value = {voice} categories = {voices} setValue = {setVoice} name = {"Select Voice..."} search = {"Search Voices.."} notFound = {"No Voice Found"}/>
+                            </div>
+                        </div>
                         
-                        </Dialog>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                            <Button variant="outline" ref={dialogCloseRef}>Cancel</Button>
+                            </DialogClose>
+                            {isUploading ? (
+                            <Button size="sm" disabled>
+                            <Loader2Icon className="animate-spin" />
+                            Uploading
+                            </Button>
+                            ) : (
+                            <Button type="submit" >
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                            <path d="M7 9l5 -5l5 5" />
+                            <path d="M12 4l0 12" />
+                            </svg>
+                            Upload File</Button>
+                            )}
+                        </DialogFooter>
+                        </form>
+                        </DialogContent>
+                    
+                    </Dialog>
                 </div>
                 <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} deletePodcast = {deletePodcast} loading={loadingPodcasts}/>
-                <div className="flex justify-between items-center align-center">
-                    <h1 className="text-lg">Recent Uploads</h1>
-                    
+                <div className="flex justify-between items-start align-center w-[100%] flex-col">
+                    <RecentFiles files={files} user = {user} s3Client = {s3Client}/>
                 </div>
 
             </div>
