@@ -85,14 +85,7 @@ export default function Home(){
                 sessionToken: credentials.sessionToken,
             },
             });
-            const pollyClient = new PollyClient({
-                region: 'us-east-1',
-                credentials: {
-                accessKeyId: credentials.accessKeyId,
-                secretAccessKey: credentials.secretAccessKey,
-                sessionToken: credentials.sessionToken,
-                },
-            });
+
             const s3Client = new S3Client({
                 region: 'us-east-2',
                 credentials: {
@@ -220,9 +213,24 @@ export default function Home(){
             )
         );
     };
-
+    const updateFile = (fileId: string, newName: string, newCategory: string) => {
+        setFiles(prev =>
+            prev.map(file =>
+            file.fileId?.S === fileId
+                ? {
+                    ...file,
+                    fileName: { S: newName },
+                    category: { S: newCategory },
+                }
+                : file
+            )
+        );
+    };
     const deletePodcast = (podcastId : string) => {
         setPodcasts(prev => prev.filter(podcast => podcast.podcastId?.S !== podcastId));
+    }
+    const deleteFile = (fileId : string) => {
+        setFiles(prev => prev.filter(file => file.fileId?.S !== fileId));
     }
     const fetchVoices = async (engine: "standard"|"neural") => {
         const command = new DescribeVoicesCommand({
@@ -423,7 +431,7 @@ export default function Home(){
                 </div>
                 <RecentPodcasts podcasts = {podcasts}user = {user} s3Client = {s3Client} dynamoClient = {dynamoClient} updatePodcast = {updatePodcast} deletePodcast = {deletePodcast} loading={loadingPodcasts}/>
                 <div className="flex justify-between items-start align-center w-[100%] flex-col">
-                    <RecentFiles files={files} user = {user} s3Client = {s3Client}/>
+                    <RecentFiles files={files} user = {user} s3Client = {s3Client} deleteFile = {deleteFile} updateFile = {updateFile} dynamoClient = {dynamoClient}/>
                 </div>
 
             </div>

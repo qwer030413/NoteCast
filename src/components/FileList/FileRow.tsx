@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 
 import {type JSX } from "react";
+import FilePopOver from "./filePopOver";
 
 export default function FileRow(props:any){
+    const s3Key = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.fileId}.txt`
     const categoryIcons: Record<string, JSX.Element> = {
         "Class Work": (
             <div className="inline-block bg-secondary p-3 rounded-sm">
@@ -64,24 +66,35 @@ export default function FileRow(props:any){
     };
     return(
         <div
-            className="grid grid-cols-4 items-center px-4 py-3 border-b last:border-0 hover:bg-muted/50 cursor-pointer"
+            className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] items-center px-4 py-3 hover:bg-muted cursor-pointer border border-gray "
         >
             <div className="flex items-center gap-3">
             {categoryIcons[props.category] || ""}
             <span className="font-medium">{props.fileName?.S || "Untitled"}</span>
             </div>
 
-            <div>{props.category}</div>
+            <div className="text-left px-4">{props.category}</div>
 
-            <div className="text-muted-foreground">
+            <div className="text-muted-foreground text-left px-5">
             {props.fileNameActual?.S || "N/A"}
             </div>
 
-            <div>
+            <div className="text-left px-6">
             {props.createdAt?.S
                 ? format(new Date(props.createdAt.S), "MMM dd, yyyy HH:mm")
                 : ""}
             </div>
+            <FilePopOver 
+            fileName = {props.fileName} 
+            category = {props.category} 
+            dynamoClient = {props.dynamoClient} 
+            user = {props.user} 
+            fileId = {props.fileId} 
+            updateFile = {props.updateFile} 
+            deleteFile = {props.deleteFile}
+            s3Client = {props.s3Client}
+            s3Key = {s3Key}
+            />
         </div>
     );
 }

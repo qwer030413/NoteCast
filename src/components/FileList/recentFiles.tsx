@@ -4,14 +4,9 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 import FileDialog from "./fileDialog";
 
-interface RecentUploadsProps {
-  files: Record<string, { S?: string }>[];
-  user : string
-  s3Client: S3Client | null;
-}
 
-export default function RecentFiles({ files, user, s3Client }: RecentUploadsProps) {
-  const recentFiles = files.slice(0, 10);
+export default function RecentFiles(props:any) {
+  const recentFiles = props.files.slice(0, 10);
     
   return (
     <Card className="mt-6 w-full">
@@ -20,7 +15,7 @@ export default function RecentFiles({ files, user, s3Client }: RecentUploadsProp
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[320px] rounded-md border">
-          <div className="grid grid-cols-4 font-medium text-sm bg-muted px-4 py-2 sticky top-0 z-10">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] font-medium text-sm bg-muted px-4 py-2 sticky top-0 z-10">
             <div>File Name</div>
             <div>Category</div>
             <div>Origin File</div>
@@ -32,10 +27,10 @@ export default function RecentFiles({ files, user, s3Client }: RecentUploadsProp
               No recent uploads
             </div>
           ) : (
-            recentFiles.map((file, index) => {
+            recentFiles.map((file: { category: { S: string; }; fileId: { S: any; }; fileNameActual: any; createdAt: any; fileName: any; }, index: any) => {
               const category = file.category?.S || "Uncategorized";
               return (
-                <FileDialog fileId={file.fileId} category = {category} fileNameActual = {file.fileNameActual} createdAt = {file.createdAt} index = {index} fileName = {file.fileName} key = {file.fileId.S} s3Client = {s3Client} user = {user}/>
+                <FileDialog dynamoClient = {props.dynamoClient} fileId={file.fileId} category = {category} fileNameActual = {file.fileNameActual} createdAt = {file.createdAt} index = {index} fileName = {file.fileName} key = {file.fileId.S} s3Client = {props.s3Client} user = {props.user} deleteFile = {props.deleteFile} updateFile = {props.updateFile}/>
               );
             })
           )}

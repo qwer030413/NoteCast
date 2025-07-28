@@ -35,7 +35,7 @@ export default function RecentPodcasts(props:any){
         </div>
     );
     return(
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6 pt-5">
 
             {isLoading
                 ? [...Array(6)].map((_, index) => (

@@ -66,8 +66,7 @@ export default function PodcastCard(props:any){
     };
     return(
         
-        <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer">
-            {/* <audio controls className="w-full bg-card rounded-lg" src={signedUrl} /> */}
+        <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer min-w-80 max-w-110">
             <div className="flex flex-row w-[100%] justify-between">
                 {categoryIcons[props.data.category]}
                 <PostcardPopover 

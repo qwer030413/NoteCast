@@ -51,7 +51,7 @@ export default function FileDialog(props:any) {
             <form>
             <DialogTrigger asChild>
             <div>
-                <FileRow fileId={props.fileId} category = {props.category} fileNameActual = {props.fileNameActual} createdAt = {props.createdAt} fileName = {props.fileName}/>
+                <FileRow user = {props.user} fileId={props.fileId} s3Client={props.s3Client} dynamoClient = {props.dynamoClient} category = {props.category} fileNameActual = {props.fileNameActual} createdAt = {props.createdAt} fileName = {props.fileName} updateFile = {props.updateFile} deleteFile = {props.deleteFile}/>
             </div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -61,7 +61,6 @@ export default function FileDialog(props:any) {
                     Preview and download your Files
                 </DialogDescription>
                 </DialogHeader>
-                <div className="border rounded-md p-4 max-h-80 overflow-auto bg-muted">
                 {signedUrl ? (
                     props.fileNameActual?.S?.endsWith(".txt") ? (
                     <iframe
@@ -81,7 +80,6 @@ export default function FileDialog(props:any) {
                 ) : (
                     <p>Loading preview...</p>
                 )}
-                </div>
                 <DialogFooter>
                 <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
