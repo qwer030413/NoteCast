@@ -19,11 +19,11 @@ function App() {
     <>
     <Toaster/>
     <Routes>
-      <Route path = "/Login" element = {<Login />} />
-      <Route path = "/SignUp" element = {<SignUp />} />
-      <Route path = "/ForgotPassword" element = {<ForgotPassword />} />
-      <Route path = "/ResetPassword" element = {<ResetPassword />} />
-      <Route path = "/"
+      <Route path = "Login" element = {<Login />} />
+      <Route path = "SignUp" element = {<SignUp />} />
+      <Route path = "ForgotPassword" element = {<ForgotPassword />} />
+      <Route path = "ResetPassword" element = {<ResetPassword />} />
+      <Route path = "Home"
         element = {
           <AuthRoute>
           <Layout>
@@ -32,7 +32,7 @@ function App() {
           </AuthRoute>
         } 
       />
-      <Route path = "/Notes"
+      <Route path = "Notes"
         element = {
           <AuthRoute>
           <Layout>
@@ -41,7 +41,7 @@ function App() {
           </AuthRoute>
         } 
       />
-      <Route path = "/Podcasts"
+      <Route path = "Podcasts"
         element = {
           <AuthRoute>
           <Layout>
@@ -50,7 +50,7 @@ function App() {
           </AuthRoute>
         } 
       />
-      <Route path = "/Summerize"
+      <Route path = "Summerize"
         element = {
           <AuthRoute>
           <Layout>
@@ -59,7 +59,7 @@ function App() {
           </AuthRoute>
         } 
       />
-      <Route path = "/Settings"
+      <Route path = "Settings"
         element = {
           <AuthRoute>
           <Layout>
@@ -68,7 +68,7 @@ function App() {
           </AuthRoute>
         } 
       />
-      <Route path = "/Account"
+      <Route path = "Account"
         element = {
           <AuthRoute>
           <Layout>

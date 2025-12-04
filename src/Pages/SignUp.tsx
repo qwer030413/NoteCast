@@ -182,7 +182,7 @@ export default function SignUp(){
                 </Button>
                 <div className="mt-4 text-center text-sm">
                     Already have an account?{' '}
-                    <Link to="/Login" className="underline">
+                    <Link to="/#/Login" className="underline">
                     Login
                     </Link>
                 </div>

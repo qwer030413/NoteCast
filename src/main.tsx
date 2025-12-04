@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import {BrowserRouter } from "react-router-dom";
 import { Amplify } from 'aws-amplify'
+import { HashRouter } from "react-router-dom";
 
 import './index.css'
 import App from './App.tsx'
@@ -30,7 +31,10 @@ Amplify.configure({
   }
 })
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter basename="/NoteCast">
-      <App />
-  </BrowserRouter>
+  // <BrowserRouter basename="/NoteCast">
+  //     <App />
+  // </BrowserRouter>
+  <HashRouter>
+    <App />
+  </HashRouter>
 )

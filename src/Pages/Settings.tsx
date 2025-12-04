@@ -120,7 +120,7 @@ export default function Settings() {
 
         <div className="space-y-2">
             <Label>Username</Label>
-            <Input value={user.username} disabled className="opacity-70"/>
+            <Input value={user? user.username:""} disabled className="opacity-70"/>
         </div>
         <div className="space-y-2">
             <Label>Email</Label>
