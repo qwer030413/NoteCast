@@ -94,7 +94,15 @@ export default function Home(){
                 sessionToken: credentials.sessionToken,
                 },
             })
-            setPollyClient(pollyClient)
+            const polly = new PollyClient({
+                region: 'us-east-1',
+                credentials: {
+                    accessKeyId: credentials.accessKeyId,
+                    secretAccessKey: credentials.secretAccessKey,
+                    sessionToken: credentials.sessionToken,
+                },
+            });
+            setPollyClient(polly)
             setDynamoClient(client);
             setS3Client(s3Client)
         } catch (err) {
@@ -236,6 +244,7 @@ export default function Home(){
         const command = new DescribeVoicesCommand({
             Engine : engine
         })
+        console.log(!pollyClient)
         if(!pollyClient){
             return;
         }
@@ -262,7 +271,7 @@ export default function Home(){
         };
         loadVoices();
     }, [engine, pollyClient])
-
+    console.log(voices)
 
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -362,7 +371,7 @@ export default function Home(){
         }
         };
     return(
-        <div className="flex w-full h-full">
+        <div className="flex w-full h-full overflow-x-hidden gap-4">
             <div className="flex-1 p-10 overflow-auto">
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg font-bold">Recent Podcasts</h1>

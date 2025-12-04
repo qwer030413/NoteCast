@@ -18,11 +18,19 @@ export default function Notes(){
     const [files, setFiles] = useState<Record<string, AttributeValue>[]>([])
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"fileName" | "category" | "createdAt">(
         "createdAt"
     );
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const sortedFiles = [...files].sort((a, b) => {
+
+    const filteredFiles = files.filter((file) => {
+        const name = (file.fileName as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
+        const category = (file.category as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
+        const query = searchQuery.toLowerCase();
+        return name.includes(query) || category.includes(query);
+    });
+    const sortedFiles = [...filteredFiles].sort((a, b) => {
         const valA =
         (a[sortBy] as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
         const valB =
@@ -126,7 +134,6 @@ export default function Notes(){
     const deleteFile = (fileId : string) => {
         setFiles(prev => prev.filter(file => file.fileId?.S !== fileId));
     }
-
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
@@ -135,7 +142,16 @@ export default function Notes(){
         <Card className="mt-6 w-full h-[100%] bg-background">
         <CardHeader>
             <CardTitle className="text-lg font-bold">Recent File Uploads</CardTitle>
-            <Input placeholder="Search..." className="w-sm mt-4 p-3"/>
+            <Input
+                placeholder="Search notes..."
+                className="w-sm mt-4 p-3"
+                value={searchQuery}
+                onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // reset to first page on search
+                }}
+            />
+
         </CardHeader>
         <CardContent>
             <ScrollArea className="h-full rounded-md border">
@@ -164,7 +180,7 @@ export default function Notes(){
                 options={{ asc: "Sort A → Z", desc: "Sort Z → A" }}
             />
 
-            <div className="px-2 py-1">Origin File</div>
+            <div className="px-2 py-1 flex items-center">Origin File</div>
 
             <SortableHeader
                 title="Created At"

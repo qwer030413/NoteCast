@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             />
             <h1 className="text-lg font-semibold truncate">{pageTitle}</h1>
           </header>
-          <main className="flex-1 transition-margin duration-200 p-5">
+          <main className="flex-1 transition-margin duration-200 p-5 overflow-x-hidden">
               {children}
           </main>
         </SidebarInset>

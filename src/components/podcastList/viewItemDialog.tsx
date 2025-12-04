@@ -12,36 +12,36 @@ import {
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import "../components.css"
-import PodcastCard from "./podcastCard"
+import PodcastRow from "./podcastRow"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { useEffect, useState, type JSX } from "react";
 import {GetObjectCommand } from "@aws-sdk/client-s3";
 export default function ViewItemDialog(props:any) {
-  const [signedUrl, setSignedUrl] = useState("");
-  useEffect(() => {
-      async function generateUrl() {
-          try {
-              const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
-              const command = new GetObjectCommand({
-                  Bucket: "note-cast-user",
-                  Key: audioKey,
-                  ResponseContentDisposition: 'attachment'
-              });
-              const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
-              setSignedUrl(signedUrl)
-          } catch (error) {
-              console.error("Error generating signed URL", error);
-          }
-      }
+    const [signedUrl, setSignedUrl] = useState("");
+    useEffect(() => {
+        async function generateUrl() {
+            try {
+                const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
+                const command = new GetObjectCommand({
+                    Bucket: "note-cast-user",
+                    Key: audioKey,
+                    ResponseContentDisposition: 'attachment'
+                });
+                const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
+                setSignedUrl(signedUrl)
+            } catch (error) {
+                console.error("Error generating signed URL", error);
+            }
+        }
 
-      generateUrl();
-  }, [props.data]);
+        generateUrl();
+    }, [props.data]);
   return (
     <Dialog>
       <form>
         <DialogTrigger asChild>
         <div>
-            <PodcastCard  data={props.data}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
+            <PodcastRow  data={props.data}  s3Client={props.s3Client} user={props.user} dynamoClient = {props.dynamoClient} updatePodcast = {props.updatePodcast} deletePodcast = {props.deletePodcast}/>
         </div>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">

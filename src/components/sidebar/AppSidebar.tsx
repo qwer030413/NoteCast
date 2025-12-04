@@ -22,7 +22,7 @@ export function AppSidebar() {
   useEffect(() => {
     getCurrentUser()
       .then(async (user) => {
-        ("User:", user.username)
+        (user.username)
 
         setData((prev) => ({
           ...prev,
