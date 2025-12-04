@@ -17,7 +17,12 @@ export default function PostcardPopover(props:any) {
   const [category,setCategory] = useState(props.category)
   const [name, setName] = useState(props.podcastName || "")
   const [open, setOpen] = useState(false)
+  console.log(props.user)
   async function updatePodcast(user: string, name: string, category: string) {
+    if (!name || !category) {
+      console.error("Name and category are required");
+      return;
+    }
     const command = new UpdateItemCommand({
       TableName: "UserPodcasts", 
       Key: {

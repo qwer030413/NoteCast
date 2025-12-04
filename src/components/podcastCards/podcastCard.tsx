@@ -64,18 +64,18 @@ export default function PodcastCard(props:any){
             </div>
         )
     };
-    console.log("data: ", props.data.category["S"])
+    console.log("data: ", props.data)
     return(
         
         <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer min-w-80 max-w-110">
             <div className="flex flex-row w-[100%] justify-between">
                 {categoryIcons[props.data.category]}
                 <PostcardPopover 
-                podcastName = {props.data.podcastName["S"]} 
-                category = {props.data.category["S"]} 
+                podcastName = {props.data.podcastName} 
+                category = {props.data.category} 
                 dynamoClient = {props.dynamoClient} 
                 user = {props.user} 
-                podcastId = {props.data.podcastId["S"]} 
+                podcastId = {props.data.podcastId} 
                 updatePodcast = {props.updatePodcast} 
                 deletePodcast = {props.deletePodcast}
                 s3Client = {props.s3Client}

@@ -8,39 +8,94 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth'
+import { getCurrentUser, fetchAuthSession } from '@aws-amplify/auth'
+import { DynamoDBClient, UpdateItemCommand} from "@aws-sdk/client-dynamodb";
+import type { AuthUser } from 'aws-amplify/auth';
+
 export default function Settings() {
     const [email, setEmail] = useState("");
-    const [username, setUsername] = useState("");
+    const [user, setUser] = useState<AuthUser | undefined>(undefined);
     const [notifications, setNotifications] = useState(true);
     const [theme, setTheme] = useState("light");
     const [profilePic, setProfilePic] = useState<string | null>("");
+    const [dynamoClient, setDynamoClient] = useState<DynamoDBClient | null>(null);
     const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         const url = URL.createObjectURL(file);
         setProfilePic(url);
+        console.log(url)
     };
+    async function updateProfile(username: string, profilePictureUrl:string) {
+        if (!username) {
+            console.error("Please enter a username");
+            return;
+        }
+        const command = new UpdateItemCommand({
+            TableName: "Users", 
+            Key: {
+            userName: {
+                S: username
+            },
+            profilePictureUrl:{
+                S:profilePictureUrl
+            }
+            },
+            UpdateExpression: "SET userName = :username, profilePictureUrl = :profilePictureUrl",
+            ExpressionAttributeValues: {
+            ":username": {S: username},
+            ":profilePictureUrl": {S: profilePictureUrl},
+            }
+        });
 
+        try {
+            if (!dynamoClient) {
+                throw new Error("DynamoDB client is not initialized");
+            }
+            const response = await dynamoClient.send(command);
+            return response;
+        } catch (err) {
+            console.error("Error updating podcast:", err);
+            throw err;
+        }
+    }
     useEffect(() => {
-    getCurrentUser()
-      .then(async (user) => {
-        (user.username)
-
-        setUsername(user.username)
-
-        const attributes = await fetchUserAttributes()
-        console.log("Attributes:", attributes)
-
-        setEmail(attributes.email? attributes.email : "")
-      })
-      .catch(() => console.log("Not signed in"))
-  }, [])
+        const setUpClient = async () => {
+            try {
+                const session = await fetchAuthSession();
+                const credentials = session.credentials;
+    
+                if (!credentials) {
+                throw new Error("No credentials found");
+                }
+    
+                const client = new DynamoDBClient({
+                region: 'us-east-2',
+                credentials: {
+                    accessKeyId: credentials.accessKeyId,
+                    secretAccessKey: credentials.secretAccessKey,
+                    sessionToken: credentials.sessionToken,
+                },
+                });
+                setDynamoClient(client);
+                getCurrentUser()
+                .then((user) => {
+                    setUser(user)
+                })
+                .catch(() => console.log("Not signed in"))
+            } catch (err) {
+                console.error("Failed to configure DynamoDB client:", err);
+            }
+            
+        };
+        
+        setUpClient();
+    }, []);
 
     return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1, y: 0}}
       className="p-8 max-w-3xl mx-auto space-y-8"
     >
         <h1 className="text-3xl font-bold">Settings</h1>
@@ -65,7 +120,7 @@ export default function Settings() {
 
         <div className="space-y-2">
             <Label>Username</Label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)}/>
+            <Input value={user.username} disabled className="opacity-70"/>
         </div>
         <div className="space-y-2">
             <Label>Email</Label>

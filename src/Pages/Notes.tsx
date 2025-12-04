@@ -78,10 +78,10 @@ export default function Notes(){
                 setDynamoClient(client);
                 setS3Client(s3Client)
                 getCurrentUser()
-                    .then((user) => {
-                        setUser(user.username)
-                    })
-                    .catch(() => console.log("Not signed in"))
+                .then((user) => {
+                    setUser(user.username)
+                })
+                .catch(() => console.log("Not signed in"))
             } catch (err) {
                 console.error("Failed to configure DynamoDB client:", err);
             }
