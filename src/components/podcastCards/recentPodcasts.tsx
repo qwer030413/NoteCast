@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import ViewItemDialog from "./viewItemDialog";
 
-
+import EmptyPodcastCard from "../noData/EmptyPodcastCard";
+import { useState } from "react";
 export default function RecentPodcasts(props:any){
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     function simplifyDynamoItem(item: any) {
         return {
             podcastId: item.podcastId?.S,
@@ -43,7 +44,8 @@ export default function RecentPodcasts(props:any){
                   ))
                 : isEmpty ? (
                     <p className="text-gray-500 text-sm col-span-3 text-center h-100 flex items-center justify-center">
-                        No podcasts to show.
+                        {/* No podcasts to show. */}
+                        <EmptyPodcastCard onAction={() => setIsDialogOpen(true)} />
                     </p>
                 )
                 : simplified.map((podcast: any, index: number) => (

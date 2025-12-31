@@ -21,7 +21,7 @@ export default function ViewItemDialog(props:any) {
     useEffect(() => {
         async function generateUrl() {
             try {
-                const audioKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`;
+                const audioKey = `private/${props.user}/audio/${props.data.podcastId}.mp3`;
                 const command = new GetObjectCommand({
                     Bucket: "note-cast-user",
                     Key: audioKey,

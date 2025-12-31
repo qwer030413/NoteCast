@@ -1,95 +1,78 @@
-
-import {type JSX } from "react";
+import { 
+  School, 
+  User, 
+  Laptop, 
+  Users, 
+  Notebook, 
+  Book, 
+  Mic2, 
+  Cpu 
+} from "lucide-react"; // Using Lucide for a cleaner, consistent stroke
 import PostcardPopover from "./podcastCardPopover";
 
-export default function PodcastCard(props:any){
-    const s3Key = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`
+export default function PodcastCard(props: any) {
+  const s3Key = `private/${props.user}/audio/${props.data.podcastId}.mp3`;
 
-    const categoryIcons: Record<string, JSX.Element> = {
-        "Class Work": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-school">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
-            <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
-            </svg>
-            </div>
-        ),
-        "Personal Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#588157"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-user">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-            </svg>
-            </div>
-        ),
-        "Lecture Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#f9dc5c"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-device-laptop">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M3 19l18 0" />
-            <path d="M5 6m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z" />
-            </svg>
-            </div>
-        ),
-        "Meeting Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#4361ee"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-users"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-            </svg>
-            </div>
-        ),
-        "Journal": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#f25c54"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-notebook">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-11a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1m3 0v18" />
-            <path d="M13 8l2 0" />
-            <path d="M13 12l2 0" />
-            </svg>
-            </div>
-        ),
-        "Book Summaries": (
-            <div className="inline-block bg-secondary p-3 rounded-sm mt-5">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="35"  height="35"  viewBox="0 0 24 24"  fill="none"  stroke="#48cae4"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-book"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
-            <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
-            <path d="M3 6l0 13" /><path d="M12 6l0 13" />
-            <path d="M21 6l0 13" />
-            </svg>
-            </div>
-        )
-    };
-    console.log("data: ", props.data)
-    return(
-        
-        <div className="p-6 border rounded-lg shadow bg-card w-full h-60 cursor-pointer min-w-80 max-w-110">
-            <div className="flex flex-row w-[100%] justify-between">
-                {categoryIcons[props.data.category]}
-                <PostcardPopover 
-                podcastName = {props.data.podcastName} 
-                category = {props.data.category} 
-                dynamoClient = {props.dynamoClient} 
-                user = {props.user} 
-                podcastId = {props.data.podcastId} 
-                updatePodcast = {props.updatePodcast} 
-                deletePodcast = {props.deletePodcast}
-                s3Client = {props.s3Client}
-                s3Key = {s3Key}
-                />
-            </div>
-            <h1 className="text-lg font-bold mt-6">{props.data.podcastName}</h1>
-            <div className="flex flex-row mt-6 gap-2 item-center">
-                <p>{props.data.category}</p>
-                •
-                <p>{props.data.engine}</p>
-                •
-                <p>{props.data.voice}</p>
-            </div>
+  // Configuration for categories: icon, specific color, and soft background
+  const categoryConfig: Record<string, { icon: any; color: string; bg: string }> = {
+    "Class Work": { icon: School, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    "Personal Notes": { icon: User, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+    "Lecture Notes": { icon: Laptop, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
+    "Meeting Notes": { icon: Users, color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-900/20" },
+    "Journal": { icon: Notebook, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-900/20" },
+    "Book Summaries": { icon: Book, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-900/20" },
+  };
+
+  const config = categoryConfig[props.data.category] || { icon: Mic2, color: "text-slate-600", bg: "bg-slate-100" };
+  const IconComponent = config.icon;
+
+  return (
+    <div className="group relative p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full min-w-[320px] max-w-[440px] h-64 flex flex-col justify-between overflow-hidden">
+      
+      {/* Decorative Background Glow */}
+      <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 ${config.bg}`} />
+
+      <div className="flex flex-row justify-between items-start relative z-10">
+        <div className={`p-4 rounded-xl ${config.bg} ${config.color} transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}>
+          <IconComponent size={28} strokeWidth={2} />
         </div>
-    );
+        
+        <PostcardPopover 
+          podcastName={props.data.podcastName} 
+          category={props.data.category} 
+          dynamoClient={props.dynamoClient} 
+          user={props.user} 
+          podcastId={props.data.podcastId} 
+          updatePodcast={props.updatePodcast} 
+          deletePodcast={props.deletePodcast}
+          s3Client={props.s3Client}
+          s3Key={s3Key}
+        />
+      </div>
+
+      <div className="relative z-10">
+        <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          {props.data.podcastName}
+        </h3>
+        
+        <div className="flex items-center gap-2 mt-2">
+          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${config.bg} ${config.color}`}>
+            {props.data.category}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Cpu size={14} className="opacity-70" />
+            <span className="text-xs font-medium">{props.data.engine}</span>
+          </div>
+          
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Mic2 size={14} className="opacity-70" />
+            <span className="text-xs font-medium">{props.data.voice}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

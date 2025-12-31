@@ -1,25 +1,37 @@
 import {useEffect, useState } from "react";
-import { getCurrentUser } from '@aws-amplify/auth'
 
-import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { fetchAuthSession } from '@aws-amplify/auth';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
-import { S3Client } from "@aws-sdk/client-s3";
 // import FileDialog from "@/components/FileList/fileDialog";
 import ViewItemDialog from "@/components/podcastList/viewItemDialog";
 import SortableHeader from "@/components/HeaderDropdown";
 import CustomPagination from "@/components/Pagination";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useAwsClients } from "@/aws/ClientProvider";
+import { useAuth } from "@/aws/AuthProvider";
 export default function Podcasts(){
-    const [dynamoClient, setDynamoClient] = useState<DynamoDBClient | null>(null);
-    const [s3Client, setS3Client] = useState<S3Client | null>(null);
-    const [user, setUser] = useState("")
+    const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
+    const { user, userLoading } = useAuth();
+
+    if (loading || userLoading) {
+        return (
+        <div className="flex-1 justify-center flex items-center">
+            <Spinner className="size-10" />
+        </div>
+        );
+    }
+
+    if (!dynamoClient || !s3Client || !pollyClient) {
+        return <div>Failed to initialize AWS clients</div>;
+    }
     const [podcasts, setPodcasts] = useState<Record<string, AttributeValue>[]>([])
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [searchQuery, setSearchQuery] = useState("");
+     const [fetchingFiles, setFetchingFiles] = useState(false);
     const [sortBy, setSortBy] = useState<"fileName" | "category" | "createdAt">(
         "createdAt"
     );
@@ -38,7 +50,7 @@ export default function Podcasts(){
         };
     }
     const filteredFiles = podcasts.filter((file) => {
-        const name = (file.fileName as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
+        const name = (file.podcastName as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
         const category = (file.category as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
         const query = searchQuery.toLowerCase();
         return name.includes(query) || category.includes(query);
@@ -63,53 +75,13 @@ export default function Podcasts(){
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentFiles = sortedFiles.slice(startIndex, startIndex + itemsPerPage).map(simplifyDynamoItem);
 
-
-    useEffect(() => {
-        const setUpClient = async () => {
-            try {
-                const session = await fetchAuthSession();
-                const credentials = session.credentials;
-    
-                if (!credentials) {
-                throw new Error("No credentials found");
-                }
-    
-                const client = new DynamoDBClient({
-                region: 'us-east-2',
-                credentials: {
-                    accessKeyId: credentials.accessKeyId,
-                    secretAccessKey: credentials.secretAccessKey,
-                    sessionToken: credentials.sessionToken,
-                },
-                });
-                const s3Client = new S3Client({
-                    region: 'us-east-2',
-                    credentials: {
-                    accessKeyId: credentials.accessKeyId,
-                    secretAccessKey: credentials.secretAccessKey,
-                    sessionToken: credentials.sessionToken,
-                    },
-                })
-                setDynamoClient(client);
-                setS3Client(s3Client)
-                getCurrentUser()
-                    .then((user) => {
-                        setUser(user.username)
-                    })
-                    .catch(() => console.log("Not signed in"))
-            } catch (err) {
-                console.error("Failed to configure DynamoDB client:", err);
-            }
-        };
-    
-        setUpClient();
-    }, []);
     
     useEffect(() => {
         if (!user || !dynamoClient) return;
 
         const fetchFiles = async () => {
             try {
+                setFetchingFiles(true)
                 const command = new QueryCommand({
                     TableName: "UserPodcasts",
                     KeyConditionExpression: "userName = :user",
@@ -128,6 +100,9 @@ export default function Podcasts(){
             } 
             catch (err) {
                 console.error("Failed to fetch podcasts", err);
+            }
+            finally{
+                setFetchingFiles(false)
             }
 
         };
@@ -212,7 +187,12 @@ export default function Podcasts(){
             />
             </div>
 
-            {currentFiles.length === 0 ? (
+            {fetchingFiles? (
+                <div className="flex items-center justify-center h-64">
+                    Fetching files
+                    <Spinner className="size-10" />
+                </div>
+            ): currentFiles.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
                 No recent uploads
                 </div>

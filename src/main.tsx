@@ -1,5 +1,4 @@
 import { createRoot } from 'react-dom/client'
-import {BrowserRouter } from "react-router-dom";
 import { Amplify } from 'aws-amplify'
 import { HashRouter } from "react-router-dom";
 
@@ -16,8 +15,8 @@ Amplify.configure({
         oauth: {
           domain: 'us-east-2ohdmf5rj9.auth.us-east-2.amazoncognito.com',
           scopes: ['email', 'openid', 'phone'],
-          redirectSignIn: ['http://localhost:5173/NoteCast/'],
-          redirectSignOut: ['http://localhost:5173/NoteCast/Login/'],
+          redirectSignIn: ['http://localhost:5173/NoteCast/#/Home'],
+          redirectSignOut: ['http://localhost:5173/NoteCast/'],
           responseType: 'code',
         },
       },

@@ -134,7 +134,7 @@ export function ResetPasswordForm({
             </span>
           </div>
           <div className="grid gap-4">
-            <Button type = "button" variant="outline" onClick={() => navigate('/Login')}>Return to Login</Button>
+            <Button type = "button" variant="outline" onClick={() => navigate('/')}>Return to Login</Button>
           </div>
         </div>
       </form>

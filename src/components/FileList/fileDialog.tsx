@@ -1,4 +1,14 @@
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { 
+  Download, 
+  FileText, 
+  Loader2, 
+  FileSearch,
+  AlertCircle
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,93 +18,113 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import {GetObjectCommand } from "@aws-sdk/client-s3";
-import 'react-h5-audio-player/lib/styles.css';
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import "../components.css"
+} from "@/components/ui/dialog";
 import FileRow from "./FileRow";
-import { useEffect, useState } from "react";
-export default function FileDialog(props:any) {
-    const [signedUrl, setSignedUrl] = useState("");
-    useEffect(() => {
-        async function generateUrl() {
-            try {
-                const fileKey = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/notes/${props.user}/${props.fileId.S}.txt`;
-                const command = new GetObjectCommand({
-                    Bucket: "note-cast-user",
-                    Key: fileKey,
-                });
-                const signedUrl = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
-                setSignedUrl(signedUrl)
-            } catch (error) {
-                console.error("Error generating signed URL", error);
-            }
-        }
 
-        generateUrl();
-    }, [props.fileId, props.s3Client, props.user, props.userPoolId]);
-    const handleDownload = async () => {
-        const response = await fetch(signedUrl);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = props.fileNameActual?.S || "file.txt";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-    };
-    return (
-        <Dialog>
-            <form>
-            <DialogTrigger asChild>
-            <div>
-                <FileRow user = {props.user} fileId={props.fileId} s3Client={props.s3Client} dynamoClient = {props.dynamoClient} category = {props.category} fileNameActual = {props.fileNameActual} createdAt = {props.createdAt} fileName = {props.fileName} updateFile = {props.updateFile} deleteFile = {props.deleteFile}/>
+export default function FileDialog(props: any) {
+  const [signedUrl, setSignedUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function generateUrl() {
+      try {
+        setLoading(true);
+        const fileKey = `private/${props.user}/notes/${props.fileId.S}.txt`;
+        const command = new GetObjectCommand({
+          Bucket: "note-cast-user",
+          Key: fileKey,
+        });
+        const url = await getSignedUrl(props.s3Client, command, { expiresIn: 3600 });
+        setSignedUrl(url);
+      } catch (error) {
+        console.error("Error generating signed URL", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    generateUrl();
+  }, [props.fileId, props.s3Client, props.user]);
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const response = await fetch(signedUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = props.fileNameActual?.S || "file.txt";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="w-full">
+          <FileRow {...props} />
+        </div>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl">
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 border-b">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <FileSearch className="size-5 text-blue-600" />
+              </div>
+              <DialogTitle className="text-xl font-bold tracking-tight">
+                {props.fileName.S}
+              </DialogTitle>
             </div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                <DialogTitle>{props.fileName.S}</DialogTitle>
-                <DialogDescription>
-                    Preview and download your Files
-                </DialogDescription>
-                </DialogHeader>
-                {signedUrl ? (
-                    props.fileNameActual?.S?.endsWith(".txt") ? (
-                    <iframe
-                        src={signedUrl}
-                        className="w-full h-64 border rounded"
-                        title="Text Preview"
-                    />
-                    ) : props.fileNameActual?.S?.endsWith(".pdf") ? (
-                    <iframe
-                        src={signedUrl}
-                        className="w-full h-64 border rounded"
-                        title="PDF Preview"
-                    />
-                    ) : (
-                    <p>Preview not available. You can download the file instead.</p>
-                    )
-                ) : (
-                    <p>Loading preview...</p>
-                )}
-                <DialogFooter>
-                <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                    <Button 
-                    type="submit"
-                    variant="default"
-                    onClick={handleDownload}
-                    >
-                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>
-                    Download File
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-            </form>
-        </Dialog>
-    )
+            <DialogDescription className="flex items-center gap-2">
+              <FileText size={14} />
+              {props.fileNameActual?.S || "Document"}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="p-6">
+          <div className="relative w-full h-72 bg-slate-50 dark:bg-slate-950 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center">
+            {loading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="size-8 text-blue-500 animate-spin" />
+                <p className="text-xs font-medium text-slate-400">Fetching preview...</p>
+              </div>
+            ) : signedUrl ? (
+              <iframe
+                src={signedUrl}
+                className="w-full h-full border-none"
+                title="File Preview"
+              />
+            ) : (
+              <div className="text-center p-8 text-slate-400">
+                <AlertCircle className="size-10 mx-auto mb-3 opacity-20" />
+                <p className="text-sm font-medium">Preview unavailable</p>
+                <p className="text-xs mt-1">Try downloading the file to view it.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <DialogFooter className="p-6 pt-0 flex items-center gap-3">
+          <DialogClose asChild>
+            <Button variant="ghost" className="flex-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+              Close
+            </Button>
+          </DialogClose>
+          
+          <Button 
+            className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white gap-2 font-bold shadow-lg shadow-blue-500/20"
+            onClick={handleDownload}
+            disabled={!signedUrl}
+          >
+            <Download size={18} />
+            Download File
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

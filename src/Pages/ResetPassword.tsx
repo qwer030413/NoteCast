@@ -29,7 +29,7 @@ export default function ResetPassword() {
                         color: '#fff',
                     },
                 });
-                navigate('/Login')
+                navigate('/')
 
             })
             .catch((error) => {

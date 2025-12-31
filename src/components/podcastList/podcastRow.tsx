@@ -4,7 +4,7 @@ import PostcardPopover from "./podcastRowPopover";
 import { format } from "date-fns";
 
 export default function PodcastRow(props:any){
-    const s3Key = `private/us-east-2:7c29331f-e3cb-ceb6-73db-108d79f8723d/audio/${props.user}/${props.data.podcastId}.mp3`
+    const s3Key = `private/${props.user}/audio/${props.data.podcastId}.mp3`
 
     const categoryIcons: Record<string, JSX.Element> = {
         "Class Work": (

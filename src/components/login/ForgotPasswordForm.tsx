@@ -65,7 +65,7 @@ export function ForgotPasswordForm({
             </span>
           </div>
           <div className="grid gap-4">
-            <Button variant="outline" type = "button" onClick={() => navigate('/Login')}>Return to Login</Button>
+            <Button variant="outline" type = "button" onClick={() => navigate('/')}>Return to Login</Button>
           </div>
         </div>
       </form>

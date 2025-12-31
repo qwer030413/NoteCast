@@ -96,11 +96,9 @@ export default function Settings() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0}}
-      className="p-8 max-w-3xl mx-auto space-y-8"
+      className="p-8 w-180 mx-auto space-y-8"
     >
-        <h1 className="text-3xl font-bold">Settings</h1>
-
-        <Card className="rounded-2xl shadow-md">
+        <Card className="w-full rounded-2xl shadow-md">
         <CardHeader>
         <CardTitle>Account Information</CardTitle>
         </CardHeader>

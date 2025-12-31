@@ -20,7 +20,7 @@ export function AuthRoute({ children }: AuthRouteProps) {
   if (loading) return null 
 
   if (!authenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   return children

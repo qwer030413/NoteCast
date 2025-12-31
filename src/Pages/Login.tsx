@@ -17,7 +17,7 @@ export default function LoginPage() {
   const Login = async () => {
     try {
       await signIn({ username: email, password });
-      navigate("//")
+      navigate("/Home")
     } catch (err) {
       console.log(err)
       toast(`Wrong Email/Password OR account not vertifed`,
