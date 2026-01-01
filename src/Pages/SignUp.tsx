@@ -16,7 +16,7 @@ import './pages.css'
 import { useState } from "react";
 import UserPool from "@/aws/UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react";

@@ -1,5 +1,4 @@
 import {useEffect, useState } from "react";
-import { getCurrentUser } from '@aws-amplify/auth'
 
 import {QueryCommand} from "@aws-sdk/client-dynamodb";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
 import { Spinner } from "@/components/ui/spinner";
+import { Inbox, LayoutGrid, Search } from "lucide-react";
 export default function Notes(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
@@ -114,24 +114,42 @@ export default function Notes(){
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
     return (
-        <div className="flex w-full h-full">
-        <Card className="mt-6 w-full h-[100%] bg-background">
+        <div className="p-6 h-full w-full mx-auto space-y-6">
+        <Card className="mt-8 overflow-hidden border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-all w-full dark:bg-slate-800/30">
+        {/* header */}
         <CardHeader>
-            <CardTitle className="text-lg font-bold">Recent File Uploads</CardTitle>
-            <Input
-                placeholder="Search notes..."
-                className="w-sm mt-4 p-3"
-                value={searchQuery}
-                onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1); // reset to first page on search
-                }}
-            />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-black flex items-center gap-3 tracking-tight">
+                <div className="p-2 bg-blue-500/10 rounded-xl">
+                  <LayoutGrid className="size-6 text-blue-600" />
+                </div>
+                Your Library
+              </CardTitle>
+              <p className="text-sm text-slate-500 font-medium">Manage and convert your uploaded documents</p>
+            </div>
 
+            <div className="relative group min-w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+              <Input
+                placeholder="Search by name or category..."
+                className="pl-10 h-11 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-blue-500 transition-all shadow-sm"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-500">
+                {filteredFiles.length} FILES
+              </div>
+            </div>
+          </div>
         </CardHeader>
+
+        {/* content */}
         <CardContent>
             <ScrollArea className="h-full rounded-md border">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] font-medium text-sm bg-background px-4 py-2 sticky top-0 z-10">
+            <div className="grid grid-cols-[2.5fr_1.2fr_1.2fr_1fr_auto] px-6 py-4 sticky top-0 z-20 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
+
+            {/* columns */}
             <SortableHeader
                 title="File Name"
                 sortKey="fileName"
@@ -141,7 +159,7 @@ export default function Notes(){
                 setSortBy(key as "fileName" | "category" | "createdAt");
                 setSortOrder(order);
                 }}
-                options={{ asc: "Sort A → Z", desc: "Sort Z → A" }}
+                options={{ asc: "Ascending", desc: "Descending" }}
             />
 
             <SortableHeader
@@ -156,7 +174,9 @@ export default function Notes(){
                 options={{ asc: "Sort A → Z", desc: "Sort Z → A" }}
             />
 
-            <div className="px-2 py-1 flex items-center">Origin File</div>
+            <div className="gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 inline-flex items-center px-2.5 py-0.5">
+            Original File
+            </div>
 
             <SortableHeader
                 title="Created At"
@@ -176,8 +196,14 @@ export default function Notes(){
                 <Spinner className="size-10" />
             </div>
             ) : currentFiles.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                No recent uploads
+                <div className="flex flex-col items-center justify-center h-80 text-center space-y-4">
+                    <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
+                      <Inbox className="size-10 text-slate-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-slate-100">No notes found</h4>
+                      <p className="text-sm text-slate-500">Try adjusting your search or upload a new file.</p>
+                    </div>
                 </div>
             ) : (
                 currentFiles.map((file, index) => {
@@ -201,11 +227,13 @@ export default function Notes(){
                 })
             )}
             </ScrollArea>
-            <CustomPagination
-                totalPages={totalPages}
-                currentPage={currentPage}
-                goToPage={goToPage}
-            />
+            <div className="mt-6">
+                <CustomPagination
+                    totalPages={totalPages}
+                    currentPage={currentPage}
+                    goToPage={goToPage}
+                />
+            </div>
         </CardContent>
         </Card>
         </div>

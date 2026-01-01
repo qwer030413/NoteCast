@@ -27,7 +27,7 @@ export default function PodcastCard(props: any) {
   const IconComponent = config.icon;
 
   return (
-    <div className="group relative p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full min-w-[320px] max-w-[440px] h-64 flex flex-col justify-between overflow-hidden">
+    <div className="group relative p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full min-w-[320px] max-w-[440px] h-64 flex flex-col justify-between overflow-hidden cursor-pointer">
       
       {/* Decorative Background Glow */}
       <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 ${config.bg}`} />

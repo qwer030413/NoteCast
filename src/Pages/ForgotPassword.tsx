@@ -1,7 +1,7 @@
 import { ForgotPasswordForm } from "@/components/login/ForgotPasswordForm"
 import { resetPassword } from 'aws-amplify/auth';
 import { useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { useNavigate } from "react-router-dom";
 
 export default function ForgotPassword() {

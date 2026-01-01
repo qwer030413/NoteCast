@@ -1,7 +1,7 @@
 import { LoginForm } from "@/components/login/login-form1"
 import { useNavigate } from "react-router-dom"
 import { signIn, signInWithRedirect, signOut} from '@aws-amplify/auth'
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 import { useState } from "react"
 export default function LoginPage() {

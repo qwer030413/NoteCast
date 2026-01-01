@@ -4,7 +4,7 @@ import { Route,Routes } from 'react-router-dom';
 import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
 import { AuthRoute } from './components/UserAuth/AuthRoute';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "@/components/ui/sonner"
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
 import Layout from './Pages/Layout';
@@ -18,7 +18,7 @@ import { AuthProvider } from './aws/AuthProvider';
 function App() {
   return (
    <>
-      <Toaster />
+      <Toaster position="top-center" richColors expand={true} />
       <AuthProvider>
         <AwsClientProvider>
           <Routes>

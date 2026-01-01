@@ -2,7 +2,7 @@ import { ResetPasswordForm } from "@/components/login/ResetPasswordForm"
 import { useState } from "react";
 import { confirmResetPassword } from 'aws-amplify/auth';
 import { useLocation, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 
 

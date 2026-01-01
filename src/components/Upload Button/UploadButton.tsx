@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import DropDownMenu from "@/components/podcastCards/dropdownMenu";
 import { Checkbox } from "../ui/checkbox";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner"
 import {
     CloudUpload,
     FileText,
@@ -24,7 +25,6 @@ import {
     X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
 import { uploadData } from "@aws-amplify/storage";
@@ -221,7 +221,12 @@ export default function UploadButton({ onUploadSuccess }: UploadButtonProps) {
                 });
                 await bedrockAgent.send(syncCommand);
             }
-            toast.success("Note uploaded and saved successfully!");
+            toast.success("Note Saved", {
+                description: "Your document is being processed into audio.",
+                icon: <CheckCircle2 className="size-5 text-emerald-500" />,
+                className: "group border-emerald-100 dark:border-emerald-900/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-2xl",
+            })
+
             onUploadSuccess();
         } catch (err) {
             console.error("Upload error:", err);

@@ -67,7 +67,7 @@ export default function FileDialog(props: any) {
         </div>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="sm:max-w-4xl w-[95vw] p-0 overflow-hidden border-none shadow-2xl transition-all">
         <div className="bg-slate-50 dark:bg-slate-900/50 p-6 border-b">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-1">
@@ -86,7 +86,7 @@ export default function FileDialog(props: any) {
         </div>
 
         <div className="p-6">
-          <div className="relative w-full h-72 bg-slate-50 dark:bg-slate-950 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-[450px] bg-slate-50 dark:bg-slate-950 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center">
             {loading ? (
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="size-8 text-blue-500 animate-spin" />

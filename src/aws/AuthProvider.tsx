@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { getCurrentUser } from "@aws-amplify/auth";
-import toast from "react-hot-toast";
-
+import { toast } from "sonner"
 type AuthContextType = {
   user: string | null;
   userLoading: boolean;
@@ -22,16 +21,11 @@ export function AuthProvider({
     getCurrentUser()
       .then((currentUser) => {
         setUser(currentUser.username);
-
-        // Show toast only ONCE per app load
         if (!hasWelcomed.current) {
-          toast(`Welcome ${currentUser.username}!`, {
-            icon: "👋",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
+          toast(`Welcome back, ${currentUser.username}!`, {
+            description: "It's great to see you again.",
+            icon: <span>👋</span>,
+            className: "rounded-xl bg-slate-900 border-slate-800 text-white",
           });
           hasWelcomed.current = true;
         }

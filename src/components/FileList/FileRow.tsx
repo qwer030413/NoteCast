@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import { type JSX } from "react";
 import { 
   School, 
   User, 
@@ -7,7 +6,6 @@ import {
   Users, 
   Notebook, 
   Book, 
-  MoreVertical,
   FileText
 } from "lucide-react"; // Using Lucide for consistent line weights
 import FilePopOver from "./filePopOver";
@@ -15,7 +13,6 @@ import FilePopOver from "./filePopOver";
 export default function FileRow(props: any) {
   const s3Key = `private/${props.user}/notes/${props.fileId.S}.txt`;
 
-  // Define styles and icons in a cleaner config object
   const categoryConfig: Record<string, { icon: any; color: string; bg: string }> = {
     "Class Work": { icon: School, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
     "Personal Notes": { icon: User, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
@@ -29,7 +26,7 @@ export default function FileRow(props: any) {
   const IconComponent = config.icon;
 
   return (
-    <div className="group grid grid-cols-[2fr_1fr_1.2fr_1.2fr_auto] items-center px-6 py-4 transition-all hover:bg-slate-50/80 dark:hover:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 last:border-none">
+    <div className="group grid grid-cols-[2.5fr_1.2fr_1.2fr_1fr_auto] items-center px-6 py-4 transition-all hover:bg-slate-50/80 dark:hover:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 last:border-none cursor-pointer">
       
       {/* name */}
       <div className="flex items-center gap-4">

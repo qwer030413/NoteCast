@@ -1,6 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { S3Client } from "@aws-sdk/client-s3";
 import EmptyState from "../noData/EmptyState";
 import FileDialog from "./fileDialog";
 import { FileText, Clock, Tag, Paperclip } from "lucide-react";
@@ -9,8 +8,8 @@ export default function RecentFiles(props:any) {
   const recentFiles = props.files.slice(0, 10);
     
   return (
-    <Card className="mt-8 overflow-hidden border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-all w-full dark:bg-slate-800/30">
-      <CardHeader className="border-b px-6 py-4">
+    <Card className="mt-8 overflow-hidden border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-all w-full dark:bg-slate-800/30 gap-0">
+      <CardHeader className="border-b px-6 py-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold flex items-center gap-2.5 tracking-tight text-slate-800 dark:text-slate-100">
             <div className="p-1.5 bg-blue-500/10 rounded-md">
@@ -26,8 +25,8 @@ export default function RecentFiles(props:any) {
       
       <CardContent className="p-0">
         <ScrollArea className="h-[400px]">
-          {/* Table Header: Sticky and Glassy */}
-          <div className="grid grid-cols-[2.5fr_1.2fr_1.2fr_1fr_auto] gap-4 px-6 py-3 sticky top-0 z-20 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
+          {/* table columns */}
+          <div className="grid grid-cols-[2.5fr_1.2fr_1.2fr_1fr_auto] px-6 py-4 sticky top-0 z-20 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
             <HeaderLabel icon={<FileText size={12}/>} label="File Name" />
             <HeaderLabel icon={<Tag size={12}/>} label="Category" />
             <HeaderLabel icon={<Paperclip size={12}/>} label="Source" />
@@ -71,7 +70,7 @@ export default function RecentFiles(props:any) {
 
 function HeaderLabel({ icon, label }: { icon: React.ReactNode, label: string }) {
   return (
-    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+    <div className="gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center px-2.5 py-0.5">
       {icon}
       {label}
     </div>

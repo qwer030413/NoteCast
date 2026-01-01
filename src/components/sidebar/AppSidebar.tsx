@@ -12,7 +12,7 @@ import {
 import { NavUser } from "@/components/nav-user"
 import { useEffect, useState } from "react"
 import { getCurrentUser, fetchUserAttributes, signOut  } from '@aws-amplify/auth'
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Home, 
