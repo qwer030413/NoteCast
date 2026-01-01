@@ -1,16 +1,7 @@
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
   ArrowUpDown,
-  Check
 } from "lucide-react";
 import { cn } from "@/lib/utils"; // Standard shadcn utility
 
