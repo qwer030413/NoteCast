@@ -159,7 +159,6 @@ export default function Notes(){
                 setSortBy(key as "fileName" | "category" | "createdAt");
                 setSortOrder(order);
                 }}
-                options={{ asc: "Ascending", desc: "Descending" }}
             />
 
             <SortableHeader
@@ -171,7 +170,6 @@ export default function Notes(){
                 setSortBy(key as "fileName" | "category" | "createdAt");
                 setSortOrder(order);
                 }}
-                options={{ asc: "Sort A → Z", desc: "Sort Z → A" }}
             />
 
             <div className="gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 inline-flex items-center px-2.5 py-0.5">
@@ -187,7 +185,6 @@ export default function Notes(){
                 setSortBy(key as "fileName" | "category" | "createdAt");
                 setSortOrder(order);
                 }}
-                options={{ asc: "Oldest First", desc: "Newest First" }}
             />
             </div>
 

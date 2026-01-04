@@ -1,85 +1,62 @@
 
-import {type JSX } from "react";
+import { 
+  School, 
+  User, 
+  Laptop, 
+  Users, 
+  Notebook, 
+  Book, 
+  FileText
+} from "lucide-react";
 import PostcardPopover from "./podcastRowPopover";
 import { format } from "date-fns";
 
 export default function PodcastRow(props:any){
     const s3Key = `private/${props.user}/audio/${props.data.podcastId}.mp3`
 
-    const categoryIcons: Record<string, JSX.Element> = {
-        "Class Work": (
-            <div className="inline-block bg-secondary p-3 rounded-sm">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-school">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
-            <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
-            </svg>
-            </div>
-        ),
-        "Personal Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm ">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="#588157"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-user">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-            </svg>
-            </div>
-        ),
-        "Lecture Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="#f9dc5c"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-device-laptop">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M3 19l18 0" />
-            <path d="M5 6m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z" />
-            </svg>
-            </div>
-        ),
-        "Meeting Notes": (
-            <div className="inline-block bg-secondary p-3 rounded-sm">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="#4361ee"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-users"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-            </svg>
-            </div>
-        ),
-        "Journal": (
-            <div className="inline-block bg-secondary p-3 rounded-sm">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="#f25c54"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-notebook">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-11a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1m3 0v18" />
-            <path d="M13 8l2 0" />
-            <path d="M13 12l2 0" />
-            </svg>
-            </div>
-        ),
-        "Book Summaries": (
-            <div className="inline-block bg-secondary p-3 rounded-sm">
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="#48cae4"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-book"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
-            <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
-            <path d="M3 6l0 13" /><path d="M12 6l0 13" />
-            <path d="M21 6l0 13" />
-            </svg>
-            </div>
-        )
+    const categoryConfig: Record<string, { icon: any; color: string; bg: string }> = {
+        "Class Work": { icon: School, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+        "Personal Notes": { icon: User, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+        "Lecture Notes": { icon: Laptop, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
+        "Meeting Notes": { icon: Users, color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-900/20" },
+        "Journal": { icon: Notebook, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-900/20" },
+        "Book Summaries": { icon: Book, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-900/20" },
     };
-    console.log(props.data.createdAt)
+
+    const config = categoryConfig[props.data.category] || { icon: FileText, color: "text-slate-500", bg: "bg-slate-50" };
+    const IconComponent = config.icon;
+    console.log(props)
     return(
         
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-center px-4 py-3 hover:bg-muted cursor-pointer border border-gray ">
-            <div className="flex items-center gap-3">
-            {categoryIcons[props.data.category] || ""}
-            <span className="font-medium">{props.data.podcastName?  props.data.podcastName : "Untitled"}</span>
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-center px-6 py-4 transition-all hover:bg-slate-50/80 dark:hover:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 last:border-none cursor-pointer">
+            {/* Name and icon */}
+            <div className="flex items-center gap-4">
+                <div className={`flex items-center justify-center p-2.5 rounded-xl ${config.bg} ${config.color} transition-transform group-hover:scale-110`}>
+                    <IconComponent size={18} strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col">
+                    <span className="font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[180px]">
+                        {props.data.podcastName|| "Untitled Podcast"}
+                    </span>
+                </div>
             </div>
-            <p>{props.data.category}</p>
+            {/* category */}
+            <div className="px-2">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${config.bg} ${config.color} border-current/10`}>
+                {props.data.category}
+                </span>
+            </div>
             <p>{props.data.engine}</p>
             <p>{props.data.voice}</p>
             <div className="text-left px-6">
-            {props.data.createdAt
-                ? format(new Date(props.data.createdAt), "MMM dd, yyyy HH:mm")
-                : ""}
+                <div className="text-slate-400 text-xs font-medium px-2">
+                {props.data.createdAt? (
+                <div className="flex flex-col">
+                    <span>{format(new Date(props.data.createdAt), "MMM dd, yyyy")}</span>
+                    <span className="text-[10px] opacity-60">{format(new Date(props.data.createdAt), "HH:mm")}</span>
+                </div>
+                ) : "—"}
+                </div>
             </div>
             <PostcardPopover 
             podcastName = {props.data.podcastName} 
