@@ -12,7 +12,6 @@ import Notes from './Pages/Notes';
 import Podcasts from './Pages/Podcasts';
 import Summerize from './Pages/Summerize';
 import Settings from './Pages/Settings';
-import Account from './Pages/Account';
 import { AwsClientProvider } from './aws/ClientProvider';
 import { AuthProvider } from './aws/AuthProvider';
 function App() {
@@ -39,7 +38,6 @@ function App() {
               <Route path="Podcasts" element={<Podcasts />} />
               <Route path="Summerize" element={<Summerize />} />
               <Route path="Settings" element={<Settings />} />
-              <Route path="Account" element={<Account />} />
             </Route>
           </Routes>
         </AwsClientProvider>

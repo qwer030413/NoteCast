@@ -27,28 +27,39 @@ export default function PodcastCard(props: any) {
   const IconComponent = config.icon;
 
   return (
-    <div className="group relative p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full min-w-[320px] max-w-[440px] h-64 flex flex-col justify-between overflow-hidden cursor-pointer">
+    <div className="group relative p-6 border 
+    border-slate-200 dark:border-slate-800 
+    rounded-2xl bg-white dark:bg-slate-900/50 
+    shadow-sm 
+    hover:shadow-xl 
+    dark:hover:border-slate-700 
+    dark:hover:bg-slate-800/80 
+    hover:-translate-y-1 
+    transition-all duration-300
+    flex
+    flex-col
+    gap-7
+    ">
       
-      {/* Decorative Background Glow */}
       <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 ${config.bg}`} />
 
-      <div className="flex flex-row justify-between items-start relative z-10">
-        <div className={`p-4 rounded-xl ${config.bg} ${config.color} transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}>
-          <IconComponent size={28} strokeWidth={2} />
+        <div className="flex flex-row justify-between items-start relative z-10">
+          <div className={`p-4 rounded-xl ${config.bg} ${config.color} transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}>
+            <IconComponent size={28} strokeWidth={2} />
+          </div>
+          
+          <PostcardPopover 
+            podcastName={props.data.podcastName} 
+            category={props.data.category} 
+            dynamoClient={props.dynamoClient} 
+            user={props.user} 
+            podcastId={props.data.podcastId} 
+            updatePodcast={props.updatePodcast} 
+            deletePodcast={props.deletePodcast}
+            s3Client={props.s3Client}
+            s3Key={s3Key}
+          />
         </div>
-        
-        <PostcardPopover 
-          podcastName={props.data.podcastName} 
-          category={props.data.category} 
-          dynamoClient={props.dynamoClient} 
-          user={props.user} 
-          podcastId={props.data.podcastId} 
-          updatePodcast={props.updatePodcast} 
-          deletePodcast={props.deletePodcast}
-          s3Client={props.s3Client}
-          s3Key={s3Key}
-        />
-      </div>
 
       <div className="relative z-10">
         <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

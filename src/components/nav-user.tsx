@@ -30,14 +30,30 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/aws/AuthProvider";
+import { useEffect, useState } from "react";
 interface NavUserProps {
-  user: { name: string; email: string, profilePicture: string }
   signout: () => Promise<void>
 }
 
-export function NavUser({ user, signout }: NavUserProps) {
+export function NavUser({signout}: NavUserProps ) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
+  const { user, attributes } = useAuth();
+  const [profilePic, setProfilePic] = useState<string | undefined>("");
+  const [email, setEmail] = useState<string | undefined>("");
+  useEffect(() => {
+    const initData = async () => {
+          try {
+              setEmail(attributes.email)
+              setProfilePic(attributes.picture)
+              
+          } catch (err) {
+              console.error("Initialization error:", err);
+          }
+      };
+      initData();
+  }, [attributes])
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -48,12 +64,12 @@ export function NavUser({ user, signout }: NavUserProps) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.profilePicture} alt={user.name} />
+                <AvatarImage src={profilePic} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{user}</span>
+                <span className="truncate text-xs">{email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -67,12 +83,12 @@ export function NavUser({ user, signout }: NavUserProps) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.profilePicture} alt={user.name} />
+                  <AvatarImage src={profilePic} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user}</span>
+                  <span className="truncate text-xs">{email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -85,9 +101,9 @@ export function NavUser({ user, signout }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onSelect = {() => navigate('/Account')}>
+              <DropdownMenuItem onSelect = {() => navigate('/Settings')}>
                 <BadgeCheck />
-                  Account
+                  Settings
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />

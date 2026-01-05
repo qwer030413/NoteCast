@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
-import { LayoutGrid, Search } from "lucide-react";
+import { Inbox, LayoutGrid, Search } from "lucide-react";
 export default function Podcasts(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
@@ -226,8 +226,14 @@ export default function Podcasts(){
                     <Spinner className="size-10" />
                 </div>
             ): currentFiles.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                No recent uploads
+                <div className="flex flex-col items-center justify-center h-80 text-center space-y-4">
+                    <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
+                      <Inbox className="size-10 text-slate-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-slate-100">No Podcasts found</h4>
+                      <p className="text-sm text-slate-500">Try adjusting your search or upload a new file.</p>
+                    </div>
                 </div>
             ) : (
                 currentFiles.map((file, index) => {

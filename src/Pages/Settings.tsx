@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,13 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from '@aws-amplify/auth';
-import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
-import type { AuthUser } from 'aws-amplify/auth';
+import { useAuth } from "@/aws/AuthProvider";
+import type { Variants } from "framer-motion";
 import { Camera, Loader2, Mail, Moon, Sun, User, Bell, ShieldCheck, Palette, Save } from "lucide-react";
-
-// Animation Variants
-const containerVariants = {
+import { getUrl, uploadData } from "@aws-amplify/storage";
+import { toast } from "sonner";
+import { updateUserAttributes } from "@aws-amplify/auth";
+const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
@@ -24,7 +24,7 @@ const containerVariants = {
     }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
         y: 0,
@@ -34,75 +34,107 @@ const itemVariants = {
 };
 
 export default function Settings() {
-    
-    // State
-    const [email, setEmail] = useState("");
-    const [user, setUser] = useState<AuthUser | undefined>(undefined);
+    const { user, attributes, setAttributes } = useAuth();
+    const [email, setEmail] = useState<string | undefined>("");
     const [notifications, setNotifications] = useState(true);
-    const [theme, setTheme] = useState("light");
-    const [profilePic, setProfilePic] = useState<string | null>("");
+    const [theme, setTheme] = useState("dark");
+    const [profilePic, setProfilePic] = useState<string | undefined>("");
     const [isLoading, setIsLoading] = useState(false);
-    
-    // AWS Clients
-    const [dynamoClient, setDynamoClient] = useState<DynamoDBClient | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
 
     useEffect(() => {
         const initData = async () => {
             try {
-                const session = await fetchAuthSession();
-                const credentials = session.credentials;
-                if (!credentials) throw new Error("No credentials found");
-    
-                const client = new DynamoDBClient({
-                    region: 'us-east-2',
-                    credentials: {
-                        accessKeyId: credentials.accessKeyId,
-                        secretAccessKey: credentials.secretAccessKey,
-                        sessionToken: credentials.sessionToken,
-                    },
-                });
-                setDynamoClient(client);
-
-                const currentUser = await getCurrentUser();
-                setUser(currentUser);
-
-                const attributes = await fetchUserAttributes();
-                if (attributes.email) setEmail(attributes.email);
+                setEmail(attributes.email)
+                setProfilePic(attributes.picture)
+                setTheme(attributes['custom:Theme'])
                 
             } catch (err) {
                 console.error("Initialization error:", err);
             }
         };
         initData();
-    }, []);
+    }, [attributes]);
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove("light", "dark")
+        if (theme === "system") {
+            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+            root.classList.add(systemTheme)
+        } else {
+            root.classList.add(theme)
+        }
 
+        localStorage.setItem("app-theme", theme)
+    }, [theme])
+
+    const handleThemeChange = async (newTheme: string) => {
+        setTheme(newTheme)
+        try {
+            await updateUserAttributes({
+                userAttributes: { 'custom:Theme': newTheme }
+            });
+            setAttributes({
+                ...attributes,
+                'custom:Theme': newTheme
+            });
+        } catch (err) {
+            console.error("Could not save theme preference to cloud", err);
+        }
+    };
     const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const file = e.target.files?.[0]
+        if(!file) return;
+
         const url = URL.createObjectURL(file);
         setProfilePic(url);
-    };
+
+        setSelectedFile(file);
+    }
 
     const handleSaveChanges = async () => {
-        if (!user || !dynamoClient) return;
+        if (!user) return;
         setIsLoading(true);
 
         try {
-            const command = new UpdateItemCommand({
-                TableName: "Users", 
-                Key: { userName: { S: user.username } },
-                UpdateExpression: "SET profilePictureUrl = :profilePictureUrl",
-                ExpressionAttributeValues: { ":profilePictureUrl": { S: profilePic || "" } }
-            });
+            let finalProfilePicUrl = profilePic;
 
-            await dynamoClient.send(command);
+            if (selectedFile) {
+                const key = `private/${user}/profilePic`;
+                await uploadData({
+                    path: key,
+                    data: selectedFile,
+                    options: {
+                        contentType: selectedFile.type,
+                    },
+                }).result;
+                const signedUrlOutput = await getUrl({
+                    path: key,
+                    options: {
+                        validateObjectExistence: true
+                    }
+                });
+                
+                finalProfilePicUrl = signedUrlOutput.url.toString();
+            }
+
+            const output = await updateUserAttributes({
+                userAttributes: { 'picture': finalProfilePicUrl },
+            });
+            console.log(output)
+            if (output) {
+                setAttributes({ ...attributes, picture: finalProfilePicUrl });
+                toast.success("Profile updated!");
+            }
         } catch (err) {
             console.error("Error updating profile:", err);
         } finally {
             setIsLoading(false);
         }
     };
-
     return (
         <motion.div 
             initial="hidden"
@@ -122,23 +154,22 @@ export default function Settings() {
 
                 <div className="grid gap-8 lg:grid-cols-3">
                     
-                    {/* LEFT COLUMN: Profile (Span 2) */}
                     <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
                         <Card className="border-none shadow-md overflow-hidden">
                             <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-90"></div>
                             
                             <CardContent className="relative pt-0">
                                 {/* Floating Avatar */}
-                                <div className="flex flex-col sm:flex-row items-start sm:items-end -mt-12 mb-6 gap-6">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-12 mb-6 gap-6">
                                     <div className="relative group">
                                         <Avatar className="w-32 h-32 border-4 border-background shadow-xl rounded-full">
-                                            <AvatarImage src={profilePic || undefined} className="object-cover" />
+                                            <AvatarImage src={profilePic} className="object-cover" />
                                             <AvatarFallback className="text-2xl font-bold bg-muted text-muted-foreground">
-                                                {user?.username.slice(0, 2).toUpperCase() || "ME"}
+                                                {user?.slice(0, 2).toUpperCase() || "ME"}
                                             </AvatarFallback>
                                         </Avatar>
                                         
-                                        {/* Camera Overlay */}
+                                        {/* profile*/}
                                         <label 
                                             htmlFor="profilePic" 
                                             className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full cursor-pointer backdrop-blur-sm"
@@ -155,7 +186,7 @@ export default function Settings() {
                                     </div>
                                     
                                     <div className="space-y-1 pb-2">
-                                        <h2 className="text-2xl font-semibold">{user?.username || "Guest User"}</h2>
+                                        <h2 className="text-2xl font-semibold">{user || "Guest User"}</h2>
                                         <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
                                             <ShieldCheck className="w-4 h-4 text-emerald-500" /> 
                                             Account Active
@@ -180,7 +211,7 @@ export default function Settings() {
                                             <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input 
                                                 id="username" 
-                                                value={user?.username || "Loading..."} 
+                                                value={user || "Loading..."} 
                                                 disabled 
                                                 className="pl-9 bg-muted/20 border-muted-foreground/20 text-foreground font-medium" 
                                             />
@@ -222,7 +253,7 @@ export default function Settings() {
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Theme</Label>
-                                            <Select value={theme} onValueChange={setTheme}>
+                                            <Select value={theme} onValueChange={handleThemeChange}>
                                                 <SelectTrigger className="w-full">
                                                     <div className="flex items-center gap-2">
                                                         {theme === 'light' ? <Sun className="w-4 h-4 text-orange-500"/> : <Moon className="w-4 h-4 text-blue-400"/>}
