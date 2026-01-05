@@ -12,6 +12,24 @@ import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
 import { Spinner } from "@/components/ui/spinner";
 import { Inbox, LayoutGrid, Search } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
+
+const rowVariants: Variants = {
+  hidden: { x: -10, opacity: 0 },
+  visible: { 
+    x: 0, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 120, damping: 20 }
+  }
+};
+
+const listVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
 export default function Notes(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
@@ -114,7 +132,10 @@ export default function Notes(){
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
     return (
-        <div className="p-6 h-full w-full mx-auto space-y-6">
+        <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 h-full w-full mx-auto space-y-6" >
         <Card className="mt-8 overflow-hidden border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-all w-full dark:bg-slate-800/30">
         {/* header */}
         <CardHeader>
@@ -203,25 +224,38 @@ export default function Notes(){
                     </div>
                 </div>
             ) : (
-                currentFiles.map((file, index) => {
+                <motion.div
+                    key="list"
+                    variants={listVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                {currentFiles.map((file, index) => {
                 const category = (file.category as AttributeValue & { S?: string })?.S || "Uncategorized";
                 return (
-                    <FileDialog
-                        dynamoClient={dynamoClient}
-                        fileId={file.fileId}
-                        category={category}
-                        fileNameActual={file.fileNameActual}
-                        createdAt={file.createdAt}
-                        index={index}
-                        fileName={file.fileName}
-                        key={(file.fileId as AttributeValue & { S?: string })?.S}
-                        s3Client={s3Client}
-                        user={user}
-                        deleteFile={deleteFile}
-                        updateFile={updateFile}
-                    />
+                    <motion.div 
+                    key={file.fileId?.S || index} 
+                    variants={rowVariants}
+                    className="transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
+                    >
+                        <FileDialog
+                            dynamoClient={dynamoClient}
+                            fileId={file.fileId}
+                            category={category}
+                            fileNameActual={file.fileNameActual}
+                            createdAt={file.createdAt}
+                            index={index}
+                            fileName={file.fileName}
+                            key={(file.fileId as AttributeValue & { S?: string })?.S}
+                            s3Client={s3Client}
+                            user={user}
+                            deleteFile={deleteFile}
+                            updateFile={updateFile}
+                        />
+                    </motion.div>
                 );
-                })
+                })}
+                </motion.div>
             )}
             </ScrollArea>
             <div className="mt-6">
@@ -233,6 +267,6 @@ export default function Notes(){
             </div>
         </CardContent>
         </Card>
-        </div>
+        </motion.div>
     );
 }

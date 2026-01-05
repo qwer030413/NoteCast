@@ -32,7 +32,6 @@ const itemVariants: Variants = {
         transition: { type: "spring", stiffness: 120 }
     }
 };
-
 export default function Settings() {
     const { user, attributes, setAttributes } = useAuth();
     const [email, setEmail] = useState<string | undefined>("");
@@ -41,7 +40,7 @@ export default function Settings() {
     const [profilePic, setProfilePic] = useState<string | undefined>("");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+    console.log(profilePic)
 
     useEffect(() => {
         const initData = async () => {

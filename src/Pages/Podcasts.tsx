@@ -13,6 +13,24 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
 import { Inbox, LayoutGrid, Search } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
+
+const rowVariants: Variants = {
+  hidden: { x: -10, opacity: 0 },
+  visible: { 
+    x: 0, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 120, damping: 20 }
+  }
+};
+
+const listVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
 export default function Podcasts(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
@@ -131,7 +149,10 @@ export default function Podcasts(){
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
     return (
-        <div className="p-6 h-full w-full mx-auto space-y-6">
+        <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 h-full w-full mx-auto space-y-6">
         <Card className="mt-8 overflow-hidden border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-all w-full dark:bg-slate-800/30">
 
         {/* header */}
@@ -169,7 +190,7 @@ export default function Podcasts(){
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] px-6 py-4 sticky top-0 z-20 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
             <SortableHeader
                 title="Podcast Name"
-                sortKey="podcastname"
+                sortKey="podcastName"
                 currentSortBy={sortBy}
                 currentSortOrder={sortOrder}
                 onSort={(key, order) => {
@@ -236,12 +257,25 @@ export default function Podcasts(){
                     </div>
                 </div>
             ) : (
-                currentFiles.map((file, index) => {
-                return (
-
-                    <ViewItemDialog key={index} data={file}  s3Client={s3Client} user={user} dynamoClient = {dynamoClient} updatePodcast = {updateFile} deletePodcast = {deleteFile}/>
-                );
-                })
+                <motion.div
+                key="list"
+                variants={listVariants}
+                initial="hidden"
+                animate="visible"
+                >
+                    {currentFiles.map((file, index) => {
+                    return (
+                        <motion.div 
+                        key={index} 
+                        variants={rowVariants}
+                        className="transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
+                        >
+                        <ViewItemDialog data={file}  s3Client={s3Client} user={user} dynamoClient = {dynamoClient} updatePodcast = {updateFile} deletePodcast = {deleteFile}/>
+                        </motion.div>
+                        
+                    );
+                    })}
+                </motion.div>
             )}
             </ScrollArea>
             {/* pagination */}
@@ -254,6 +288,6 @@ export default function Podcasts(){
             </div>
         </CardContent>
         </Card>
-        </div>
+        </motion.div>
     );
 }

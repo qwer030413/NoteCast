@@ -3,14 +3,35 @@ import ChatRoom from "@/components/AIChatBot/ChatRoom";
 import ChatInput from "@/components/AIChatBot/ChatInput";
 import { RetrieveAndGenerateCommand } from "@aws-sdk/client-bedrock-agent-runtime";
 import { useAwsClients } from "@/aws/ClientProvider";
-import { v4 as uuidv4 } from "uuid";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import {PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { useAuth } from "@/aws/AuthProvider";
+import { motion, type Variants} from "framer-motion";
+
 type Message = {
   role: "user" | "assistant";
   content: string;
+};
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 15 }, 
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  },
 };
 
 export default function Summarize() {
@@ -18,19 +39,18 @@ export default function Summarize() {
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  // const [sessionId, setSessionId] = useState<string>(uuidv4());
   const [dbFiles, setDbFiles] = useState<any[]>([]); 
   const [selectedFileId, setSelectedFileId] = useState<string>("all");
   const { bedrockAgentRuntime, bedrockAgent, s3Client, dynamoClient } = useAwsClients();
   const { user } = useAuth();
-  // Auto-scroll logic using window.scrollTo
+
   useEffect(() => {
-    // console.log('h')
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: "smooth",
     });
   }, [messages, loading]);
+
   useEffect(() => {
     const fetchUserFiles = async () => {
       if (!user || !dynamoClient) return;
@@ -41,7 +61,6 @@ export default function Summarize() {
           ExpressionAttributeValues: { ":user": { S: user } },
         });
         const response = await dynamoClient.send(command);
-        console.log(response.Items)
         setDbFiles(response.Items || []);
       } catch (err) {
         console.error("Failed to fetch files for dropdown", err);
@@ -49,39 +68,34 @@ export default function Summarize() {
     };
     fetchUserFiles();
   }, [user, dynamoClient]);
+
   const handleSend = async () => {
     if (!input.trim() && !file && (!selectedFileId || selectedFileId === "all")) return;
     if (!bedrockAgentRuntime || !s3Client || !bedrockAgent) return;
 
     setLoading(true);
-    // Use the file name if no text input is provided
     const userMessageContent = input || (file ? `Analyze ${file.name}` : "Summarize document");
     setMessages((prev) => [...prev, { role: "user", content: userMessageContent }]);
     
-    // 1. Capture the input then clear it for UX
     const currentInput = input;
     setInput("");
 
     try {
         let currentFileId = selectedFileId;
-
-        // 2. Handle New File Upload
         if (file) {
             const fileId = `file-${Date.now()}`;
             const key = `inputs/${file.name}`;
             
-            // Upload File
             await s3Client.send(new PutObjectCommand({
                 Bucket: 'note-cast-user',
                 Key: key,
                 Body: file,
             }));
 
-            // Upload Metadata (Must match the casing in your vector store)
             const metadata = {
                 metadataAttributes: {
-                    file_id: fileId, // Use underscore
-                    user_id: user    // Add user filter for security
+                    file_id: fileId,
+                    user_id: user   
                 }
             };
             await s3Client.send(new PutObjectCommand({
@@ -90,7 +104,6 @@ export default function Summarize() {
                 Body: JSON.stringify(metadata),
             }));
 
-            // Trigger Sync
             await bedrockAgent.send(new StartIngestionJobCommand({
                 knowledgeBaseId: 'ZEYGFYPU3S',
                 dataSourceId: '10Z5LEVPS5',
@@ -99,18 +112,13 @@ export default function Summarize() {
             currentFileId = fileId;
             setFile(null);
             
-            // IMPORTANT: Add a small delay or a message to the user
             setMessages(prev => [...prev, { 
                 role: "assistant", 
                 content: "I've received the file! It's being indexed. This usually takes about 30 seconds..." 
             }]);
-            // You might want to return early here or implement polling
         }
 
-        // 3. Build the Filter
-        // We want to filter by USER first, then FILE if one is selected
         const filters: any[] = [{ equals: { key: "user_id", value: user } }];
-        
         if (currentFileId && currentFileId !== "all") {
             filters.push({ equals: { key: "file_id", value: currentFileId } });
         }
@@ -144,15 +152,35 @@ export default function Summarize() {
         setLoading(false);
     }
   };
-  
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-background text-foreground items-center">
-      {/*Main content */}
-      <ChatRoom messages={messages} loading={loading}/>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-screen w-full flex flex-col bg-background text-foreground"
+    >
+      <motion.div variants={itemVariants} className="flex-1 w-full flex flex-col items-center">
+        <ChatRoom messages={messages} loading={loading}/>
+      </motion.div>
 
-      {/* Input Section*/}
-      <ChatInput setFile={setFile} setInput={setInput} file={file} input={input} loading={loading} handleSend={handleSend} dbFiles = {dbFiles} selectedFileId = {selectedFileId} setSelectedFileId = {setSelectedFileId}/>
-    </div>
+      <motion.div
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5, duration: 0.3 }}
+      className="w-full flex justify-center pb-6">
+        <ChatInput 
+          setFile={setFile} 
+          setInput={setInput} 
+          file={file} 
+          input={input} 
+          loading={loading} 
+          handleSend={handleSend} 
+          dbFiles={dbFiles} 
+          selectedFileId={selectedFileId} 
+          setSelectedFileId={setSelectedFileId}
+        />
+      </motion.div>
+    </motion.div>
   );
 }
