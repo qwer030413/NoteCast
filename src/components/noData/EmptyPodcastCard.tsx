@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import UploadButton from "../Upload Button/UploadButton";
 
-export default function EmptyPodcastCard({ onAction }: { onAction: () => void }) {
+interface EmptyPodcastCardProps {
+  refreshData: () => void;
+}
+export default function EmptyPodcastCard({refreshData} : EmptyPodcastCardProps) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center justify-center min-h-[400px] text-center p-8 border-2 border-dashed rounded-3xl bg-slate-50/50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-800 w-full"
@@ -23,16 +26,13 @@ export default function EmptyPodcastCard({ onAction }: { onAction: () => void })
         </svg>
       </div>
       <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        No podcasts or notes yet
+        No podcasts yet
       </h3>
       <p className="text-slate-500 dark:text-slate-400 max-w-sm mt-2 mb-6">
-        Transform your study guides, meeting notes, or journals into immersive 
+        Transform your study guides, meeting notes, or journals into immersive
         audio experiences. Upload your first file to get started.
       </p>
-      <Button onClick={onAction} className="gap-2 shadow-lg shadow-blue-500/20">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        Create Your First Podcast
-      </Button>
+      <UploadButton onUploadSuccess={refreshData} Text="Create your first podcast" />
     </motion.div>
   );
 }

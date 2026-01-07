@@ -39,6 +39,7 @@ export default function PodcastCard(props: any) {
     flex
     flex-col
     gap-7
+    cursor-pointer
     ">
       
       <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 ${config.bg}`} />

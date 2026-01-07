@@ -102,7 +102,7 @@ export default function Settings() {
             let finalProfilePicUrl = profilePic;
 
             if (selectedFile) {
-                const key = `private/${user}/profilePic`;
+                const key = `public/${user}/profilePic`;
                 await uploadData({
                     path: key,
                     data: selectedFile,

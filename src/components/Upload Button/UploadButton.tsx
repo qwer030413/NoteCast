@@ -35,8 +35,9 @@ import { v4 as uuidv4 } from "uuid";
 
 interface UploadButtonProps {
     onUploadSuccess: () => void;
+    Text : string;
 }
-export default function UploadButton({ onUploadSuccess }: UploadButtonProps) {
+export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProps) {
     const { dynamoClient, pollyClient, bedrockAgent } = useAwsClients();
     const { user } = useAuth();
 
@@ -246,7 +247,7 @@ export default function UploadButton({ onUploadSuccess }: UploadButtonProps) {
             <DialogTrigger asChild>
                 <Button className="h-12 px-6 text-base font-medium shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] gap-2">
                     <CloudUpload size={18} />
-                    Add New File
+                    {Text}
                 </Button>
             </DialogTrigger>
 

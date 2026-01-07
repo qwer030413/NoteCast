@@ -154,9 +154,9 @@ export default function Home() {
             <div className="flex-1 p-10 overflow-auto">
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg font-bold">Recent Podcasts</h1>
-                    <UploadButton onUploadSuccess={refreshData} />
+                    <UploadButton onUploadSuccess={refreshData} Text = "Upload New File"/>
                 </div>
-                <RecentPodcasts podcasts={podcasts} user={user} s3Client={s3Client} dynamoClient={dynamoClient} updatePodcast={updatePodcast} deletePodcast={deletePodcast} loading={loadingPodcasts} />
+                <RecentPodcasts podcasts={podcasts} user={user} s3Client={s3Client} dynamoClient={dynamoClient} updatePodcast={updatePodcast} deletePodcast={deletePodcast} loading={loadingPodcasts} refreshData = {refreshData}/>
                 <div className="flex justify-between items-start align-center w-[100%] flex-col">
                     <RecentFiles files={files} user={user} s3Client={s3Client} deleteFile={deleteFile} updateFile={updateFile} dynamoClient={dynamoClient} />
                 </div>

@@ -2,7 +2,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ViewItemDialog from "./viewItemDialog";
 
 import EmptyPodcastCard from "../noData/EmptyPodcastCard";
-import { useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 const containerVariants : Variants = {
     hidden: { opacity: 0 },
@@ -22,8 +21,27 @@ const cardVariants: Variants = {
         transition: { type: "spring", stiffness: 100, damping: 15 }
     }
 };
-export default function RecentPodcasts(props:any){
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+interface RecentPodcastsProps {
+    podcasts?: Array<{
+        podcastId?: string;
+        userName?: string;
+        podcastName?: string;
+        createdAt?: string;
+        category?: string;
+        engine?: string;
+        voice?: string;
+    }>;
+    loading: boolean;
+    s3Client: any;
+    user: any;
+    dynamoClient: any;
+    updatePodcast: (podcastId: string, newName: string, newCategory: string) => void;
+    deletePodcast: (podcastId: string) => void;
+    refreshData: () => void;
+}
+
+export default function RecentPodcasts(props: RecentPodcastsProps) {
     function simplifyDynamoItem(item: any) {
         return {
             podcastId: item.podcastId?.S,
@@ -36,6 +54,9 @@ export default function RecentPodcasts(props:any){
         };
     }
     const simplified = props.podcasts?.slice(0, 6).map(simplifyDynamoItem);
+    if (!simplified){
+        return
+    }
     const isLoading = props.loading;
     const isEmpty = !isLoading && simplified.length === 0;
     const renderSkeletonCard = () => (
@@ -80,7 +101,7 @@ export default function RecentPodcasts(props:any){
                         animate={{ opacity: 1, scale: 1 }}
                         className="h-100 flex items-center justify-center"
                     >
-                        <EmptyPodcastCard onAction={() => setIsDialogOpen(true)} />
+                        <EmptyPodcastCard refreshData = {props.refreshData}/>
                     </motion.div>
                 ) : (
                     <motion.div 

@@ -95,7 +95,7 @@ export default function ViewItemDialog(props: any) {
               src={signedUrl}
               showJumpControls={false}
               customAdditionalControls={[]}
-              className="rounded-xl shadow-none border-none bg-transparent"
+              className="rounded-xl shadow-none border-none bg-black"
             />
           </div>
         </div>
