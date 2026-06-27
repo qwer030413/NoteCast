@@ -1,17 +1,21 @@
 import { format } from "date-fns";
 import { 
+  Archive,
   School, 
   User, 
   Laptop, 
   Users, 
   Notebook, 
   Book, 
-  FileText
+  FileText,
+  ListPlus,
+  Star
 } from "lucide-react"; // Using Lucide for consistent line weights
 import FilePopOver from "./filePopOver";
+import { getStorageKey } from "@/lib/notecast";
 
 export default function FileRow(props: any) {
-  const s3Key = `private/${props.user}/notes/${props.fileId.S}.txt`;
+  const s3Key = getStorageKey(props, props.user);
 
   const categoryConfig: Record<string, { icon: any; color: string; bg: string }> = {
     "Class Work": { icon: School, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
@@ -66,7 +70,44 @@ export default function FileRow(props: any) {
       </div>
 
       {/* actions */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          type="button"
+          aria-label="Toggle favorite"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            props.onToggleFavorite?.();
+          }}
+          className={`rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${props.isFavorite ? "text-amber-500" : "text-slate-400"}`}
+        >
+          <Star size={16} fill={props.isFavorite ? "currentColor" : "none"} />
+        </button>
+        <button
+          type="button"
+          aria-label="Toggle archive"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            props.onToggleArchive?.();
+          }}
+          className={`rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${props.isArchived ? "text-blue-500" : "text-slate-400"}`}
+        >
+          <Archive size={16} />
+        </button>
+        <button
+          type="button"
+          aria-label="Toggle audio queue"
+          title="Queue for audio"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            props.onToggleAudioQueue?.();
+          }}
+          className={`rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${props.isQueuedForAudio ? "text-emerald-500" : "text-slate-400"}`}
+        >
+          <ListPlus size={16} />
+        </button>
         <FilePopOver 
           fileName={props.fileName} 
           category={props.category} 

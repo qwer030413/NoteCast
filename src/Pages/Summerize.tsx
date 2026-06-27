@@ -8,11 +8,21 @@ import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { useAuth } from "@/aws/AuthProvider";
 import { motion, type Variants} from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { BookOpenCheck, CheckSquare, Download, Layers3, ListChecks, WandSparkles } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
 };
+
+const summaryModes = [
+  { label: "Brief", icon: WandSparkles, prompt: "Give me a concise summary with the 5 most important points." },
+  { label: "Study Guide", icon: BookOpenCheck, prompt: "Create a study guide with headings, key concepts, and definitions." },
+  { label: "Quiz Me", icon: CheckSquare, prompt: "Create 8 quiz questions with answers from this document." },
+  { label: "Key Terms", icon: Layers3, prompt: "Extract key terms and explain each in one sentence." },
+  { label: "Action Items", icon: ListChecks, prompt: "Find action items, decisions, and follow-up tasks." },
+];
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -83,6 +93,10 @@ export default function Summarize() {
     try {
         let currentFileId = selectedFileId;
         if (file) {
+            if (!window.confirm("Uploading a new chat file will write to S3 and start one Bedrock ingestion job. Continue?")) {
+                setLoading(false);
+                return;
+            }
             const fileId = `file-${Date.now()}`;
             const key = `inputs/${file.name}`;
             
@@ -153,6 +167,19 @@ export default function Summarize() {
     }
   };
 
+  const exportChat = () => {
+    const content = messages.map((message) => `## ${message.role === "user" ? "You" : "Assistant"}\n\n${message.content}`).join("\n\n");
+    const blob = new Blob([content || "# NoteCast Summary\n"], { type: "text/markdown" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `notecast-summary-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -161,6 +188,28 @@ export default function Summarize() {
       className="min-h-screen w-full flex flex-col bg-background text-foreground"
     >
       <motion.div variants={itemVariants} className="flex-1 w-full flex flex-col items-center">
+        <div className="w-full max-w-3xl px-4 pt-8 flex flex-wrap items-center gap-2">
+          {summaryModes.map((mode) => {
+            const Icon = mode.icon;
+            return (
+              <Button
+                key={mode.label}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setInput(mode.prompt)}
+              >
+                <Icon className="size-4" />
+                {mode.label}
+              </Button>
+            );
+          })}
+          <Button type="button" variant="ghost" size="sm" className="ml-auto gap-2" onClick={exportChat}>
+            <Download className="size-4" />
+            Export
+          </Button>
+        </div>
         <ChatRoom messages={messages} loading={loading}/>
       </motion.div>
 

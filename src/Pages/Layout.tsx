@@ -6,15 +6,6 @@ import { Outlet } from "react-router-dom";
 function getActivePage(path: string) {
   return navItems.find((item) => item.url === path);
 }
-function getPageTitle(path: string) {
-  const title = path
-    .split("/")
-    .filter(Boolean)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" / ")
-
-  return title || "Dashboard"
-}
 export default function Layout() {
   const location = useLocation()
   const activePage = getActivePage(location.pathname)

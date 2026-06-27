@@ -8,24 +8,14 @@ import SideChart from "@/components/sideChart";
 import RecentPodcasts from "@/components/podcastCards/recentPodcasts";
 import RecentFiles from "@/components/FileList/recentFiles";
 import UploadButton from "@/components/Upload Button/UploadButton";
+import DashboardInsights from "@/components/DashboardInsights";
+import ProcessingStatusPanel from "@/components/ProcessingStatusPanel";
 
 
 
 export default function Home() {
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
-
-    if (loading || userLoading) {
-        return (
-            <div className="flex-1 justify-center flex items-center">
-                <Spinner className="size-10" />
-            </div>
-        );
-    }
-
-    if (!dynamoClient || !s3Client || !pollyClient) {
-        return <div>Failed to initialize AWS clients</div>;
-    }
 
     // const navigate = useNavigate()
     const [files, setFiles] = useState<Record<string, AttributeValue>[]>([])
@@ -37,7 +27,7 @@ export default function Home() {
     >([]);
     const refreshData = () => setUploadTrigger(prev => prev + 1);
     useEffect(() => {
-        if (!user) {
+        if (!user || !dynamoClient) {
             setLoadingPodcasts(false);
             return;
         }
@@ -149,12 +139,27 @@ export default function Home() {
     const deleteFile = (fileId: string) => {
         setFiles(prev => prev.filter(file => file.fileId?.S !== fileId));
     }
+    if (loading || userLoading) {
+        return (
+            <div className="flex-1 justify-center flex items-center">
+                <Spinner className="size-10" />
+            </div>
+        );
+    }
+
+    if (!dynamoClient || !s3Client || !pollyClient) {
+        return <div>Failed to initialize AWS clients</div>;
+    }
     return (
         <div className="flex w-full h-full overflow-x-hidden gap-4">
             <div className="flex-1 p-10 overflow-auto">
                 <div className="flex justify-between items-center align-center">
                     <h1 className="text-lg font-bold">Recent Podcasts</h1>
                     <UploadButton onUploadSuccess={refreshData} Text = "Upload New File"/>
+                </div>
+                <div className="grid gap-4 mt-6">
+                    <DashboardInsights files={files} podcasts={podcasts} />
+                    <ProcessingStatusPanel files={files} podcasts={podcasts} />
                 </div>
                 <RecentPodcasts podcasts={podcasts} user={user} s3Client={s3Client} dynamoClient={dynamoClient} updatePodcast={updatePodcast} deletePodcast={deletePodcast} loading={loadingPodcasts} refreshData = {refreshData}/>
                 <div className="flex justify-between items-start align-center w-[100%] flex-col">

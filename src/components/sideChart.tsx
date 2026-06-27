@@ -1,5 +1,5 @@
 import * as React from "react"
-import { TrendingUp, FileText } from "lucide-react"
+import { FileText, Tags } from "lucide-react"
 import { Label, Pie, PieChart, Cell } from "recharts"
 import {
   Card,
@@ -51,6 +51,9 @@ const chartConfig = {
 export default function SideChart({ categoryStats = [] }: { categoryStats: any[] }) {
   const totalFiles = React.useMemo(() => {
     return categoryStats.reduce((acc, curr) => acc + curr.count, 0)
+  }, [categoryStats])
+  const topCategory = React.useMemo(() => {
+    return [...categoryStats].sort((a, b) => b.count - a.count)[0]
   }, [categoryStats])
 
   return (
@@ -136,9 +139,9 @@ export default function SideChart({ categoryStats = [] }: { categoryStats: any[]
             ))}
         </div>
         
-        <div className="flex items-center gap-2 leading-none font-semibold text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full">
-          <TrendingUp className="h-4 w-4" />
-          +5.2% growth this week
+        <div className="flex items-center gap-2 leading-none font-semibold text-blue-500 bg-blue-500/10 px-3 py-1.5 rounded-full">
+          <Tags className="h-4 w-4" />
+          {topCategory ? `${topCategory.category}: ${topCategory.count}` : "No categories yet"}
         </div>
       </CardFooter>
     </Card>

@@ -35,17 +35,6 @@ export default function Podcasts(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
 
-    if (loading || userLoading) {
-        return (
-        <div className="flex-1 justify-center flex items-center">
-            <Spinner className="size-10" />
-        </div>
-        );
-    }
-
-    if (!dynamoClient || !s3Client || !pollyClient) {
-        return <div>Failed to initialize AWS clients</div>;
-    }
     const [podcasts, setPodcasts] = useState<Record<string, AttributeValue>[]>([])
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -57,7 +46,7 @@ export default function Podcasts(){
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
 
-    function simplifyDynamoItem(item: any) {
+    function simplifyDynamoItem(item: Record<string, AttributeValue>) {
         return {
             podcastId: item.podcastId?.S,
             userName: item.userName?.S,
@@ -65,7 +54,7 @@ export default function Podcasts(){
             createdAt: item.createdAt?.S,
             category: item.category?.S,
             engine: item.engine?.S,
-            voice: item.voice.S
+            voice: item.voice?.S
         };
     }
     const filteredFiles = podcasts.filter((file) => {
@@ -148,6 +137,17 @@ export default function Podcasts(){
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
+    if (loading || userLoading) {
+        return (
+        <div className="flex-1 justify-center flex items-center">
+            <Spinner className="size-10" />
+        </div>
+        );
+    }
+
+    if (!dynamoClient || !s3Client || !pollyClient) {
+        return <div>Failed to initialize AWS clients</div>;
+    }
     return (
         <motion.div 
         initial={{ opacity: 0, y: 20 }}

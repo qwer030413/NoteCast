@@ -32,6 +32,7 @@ interface ChatInputProps {
 export default function ChatInput({setFile, setInput, loading, handleSend, input, file, dbFiles, selectedFileId, setSelectedFileId} : ChatInputProps){
   const selectedDbFile = dbFiles.find(f => f.fileId?.S === selectedFileId);
   const selectedDbFileName = selectedDbFile?.fileName?.S;
+  const hasSelectedDocument = Boolean(selectedFileId && selectedFileId !== "all" && selectedFileId !== "none");
   return(
     <footer className="fixed bottom-0 w-full bg-gradient-to-t from-background via-background to-transparent pb-8 pt-10 px-4">
       <div className="max-w-3xl mx-auto">
@@ -73,7 +74,7 @@ export default function ChatInput({setFile, setInput, loading, handleSend, input
                 </SelectContent>
               </Select>
           </div>
-          {(file || (selectedFileId && selectedFileId !== "all")) && (
+          {(file || hasSelectedDocument) && (
             <div className="absolute -top-12 left-0 flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs text-blue-400 animate-in fade-in slide-in-from-bottom-2">
               <FileText size={14} />
               
@@ -108,7 +109,7 @@ export default function ChatInput({setFile, setInput, loading, handleSend, input
 
           <Button
             onClick={handleSend}
-            disabled={loading || (!input.trim() && !file)}
+            disabled={loading || (!input.trim() && !file && !hasSelectedDocument)}
             size="icon"
             className="size-10 rounded-xl"
           >

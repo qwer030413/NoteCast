@@ -11,8 +11,10 @@ import { Input } from "@/components/ui/input";
 import { useAwsClients } from "@/aws/ClientProvider";
 import { useAuth } from "@/aws/AuthProvider";
 import { Spinner } from "@/components/ui/spinner";
-import { Inbox, LayoutGrid, Search } from "lucide-react";
+import { Archive, Inbox, LayoutGrid, Search, Star, Tags } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import { buildLocalTags, getDocumentSearchText, getString } from "@/lib/notecast";
+import { Button } from "@/components/ui/button";
 
 const rowVariants: Variants = {
   hidden: { x: -10, opacity: 0 },
@@ -34,17 +36,6 @@ export default function Notes(){
     const { dynamoClient, s3Client, pollyClient, loading } = useAwsClients();
     const { user, userLoading } = useAuth();
 
-    if (loading || userLoading ) {
-        return (
-        <div className="flex-1 justify-center flex items-center">
-            <Spinner className="size-10" />
-        </div>
-        );
-    }
-
-    if (!dynamoClient || !s3Client || !pollyClient) {
-        return <div>Failed to initialize AWS clients</div>;
-    }
     const [files, setFiles] = useState<Record<string, AttributeValue>[]>([])
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -54,11 +45,28 @@ export default function Notes(){
     );
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [fetchingFiles, setFetchingFiles] = useState(false);
+    const [activeTag, setActiveTag] = useState("all");
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+    const [archivedIds, setArchivedIds] = useState<string[]>([]);
+    const [queuedAudioIds, setQueuedAudioIds] = useState<string[]>([]);
+    const storagePrefix = user ? `notecast-${user}` : "notecast-guest";
+    useEffect(() => {
+        setFavoriteIds(JSON.parse(localStorage.getItem(`${storagePrefix}-favorite-notes`) || "[]"));
+        setArchivedIds(JSON.parse(localStorage.getItem(`${storagePrefix}-archived-notes`) || "[]"));
+        setQueuedAudioIds(JSON.parse(localStorage.getItem(`${storagePrefix}-queued-audio`) || "[]"));
+    }, [storagePrefix]);
+    const allTags = Array.from(new Set(files.flatMap(buildLocalTags))).sort();
     const filteredFiles = files.filter((file) => {
-        const name = (file.fileName as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
-        const category = (file.category as AttributeValue & { S?: string })?.S?.toLowerCase() || "";
         const query = searchQuery.toLowerCase();
-        return name.includes(query) || category.includes(query);
+        const fileId = getString(file, "fileId");
+        const tags = buildLocalTags(file);
+        const matchesSearch = getDocumentSearchText(file).includes(query);
+        const matchesTag = activeTag === "all" || tags.includes(activeTag);
+        const matchesFavorite = !showFavoritesOnly || favoriteIds.includes(fileId);
+        const matchesArchive = showArchived ? archivedIds.includes(fileId) : !archivedIds.includes(fileId);
+        return matchesSearch && matchesTag && matchesFavorite && matchesArchive;
     });
     const sortedFiles = [...filteredFiles].sort((a, b) => {
         const valA =
@@ -128,9 +136,25 @@ export default function Notes(){
     const deleteFile = (fileId : string) => {
         setFiles(prev => prev.filter(file => file.fileId?.S !== fileId));
     }
+    const toggleLocalList = (key: string, fileId: string, current: string[], setter: (next: string[]) => void) => {
+        const next = current.includes(fileId) ? current.filter((id) => id !== fileId) : [...current, fileId];
+        setter(next);
+        localStorage.setItem(`${storagePrefix}-${key}`, JSON.stringify(next));
+    };
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
+    if (loading || userLoading ) {
+        return (
+        <div className="flex-1 justify-center flex items-center">
+            <Spinner className="size-10" />
+        </div>
+        );
+    }
+
+    if (!dynamoClient || !s3Client || !pollyClient) {
+        return <div>Failed to initialize AWS clients</div>;
+    }
     return (
         <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -162,6 +186,40 @@ export default function Notes(){
                 {filteredFiles.length} FILES
               </div>
             </div>
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Button
+                type="button"
+                variant={showFavoritesOnly ? "default" : "outline"}
+                size="sm"
+                className="gap-2"
+                onClick={() => setShowFavoritesOnly((value) => !value)}
+            >
+                <Star className="size-4" />
+                Favorites
+            </Button>
+            <Button
+                type="button"
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                className="gap-2"
+                onClick={() => setShowArchived((value) => !value)}
+            >
+                <Archive className="size-4" />
+                Archived
+            </Button>
+            <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-muted-foreground px-2">
+                <Tags className="size-3.5" />
+                Tags
+            </span>
+            <Button type="button" variant={activeTag === "all" ? "default" : "outline"} size="sm" onClick={() => setActiveTag("all")}>
+                All
+            </Button>
+            {allTags.slice(0, 8).map((tag) => (
+                <Button key={tag} type="button" variant={activeTag === tag ? "default" : "outline"} size="sm" onClick={() => setActiveTag(tag)}>
+                    {tag}
+                </Button>
+            ))}
           </div>
         </CardHeader>
 
@@ -243,6 +301,9 @@ export default function Notes(){
                             fileId={file.fileId}
                             category={category}
                             fileNameActual={file.fileNameActual}
+                            storageKey={file.storageKey}
+                            fileType={file.fileType}
+                            sourceSize={file.sourceSize}
                             createdAt={file.createdAt}
                             index={index}
                             fileName={file.fileName}
@@ -251,6 +312,12 @@ export default function Notes(){
                             user={user}
                             deleteFile={deleteFile}
                             updateFile={updateFile}
+                            isFavorite={favoriteIds.includes(getString(file, "fileId"))}
+                            isArchived={archivedIds.includes(getString(file, "fileId"))}
+                            isQueuedForAudio={queuedAudioIds.includes(getString(file, "fileId"))}
+                            onToggleFavorite={() => toggleLocalList("favorite-notes", getString(file, "fileId"), favoriteIds, setFavoriteIds)}
+                            onToggleArchive={() => toggleLocalList("archived-notes", getString(file, "fileId"), archivedIds, setArchivedIds)}
+                            onToggleAudioQueue={() => toggleLocalList("queued-audio", getString(file, "fileId"), queuedAudioIds, setQueuedAudioIds)}
                         />
                     </motion.div>
                 );

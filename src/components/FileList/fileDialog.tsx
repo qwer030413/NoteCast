@@ -6,7 +6,9 @@ import {
   FileText, 
   Loader2, 
   FileSearch,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +22,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import FileRow from "./FileRow";
+import { formatBytes, getNumber, getStorageKey, getString } from "@/lib/notecast";
+import { toast } from "sonner";
 
 export default function FileDialog(props: any) {
   const [signedUrl, setSignedUrl] = useState("");
@@ -29,7 +33,7 @@ export default function FileDialog(props: any) {
     async function generateUrl() {
       try {
         setLoading(true);
-        const fileKey = `private/${props.user}/notes/${props.fileId.S}.txt`;
+        const fileKey = getStorageKey(props, props.user);
         const command = new GetObjectCommand({
           Bucket: "note-cast-user",
           Key: fileKey,
@@ -59,6 +63,39 @@ export default function FileDialog(props: any) {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleExportMetadata = (format: "json" | "md") => {
+    const metadata = {
+      title: props.fileName?.S || "Untitled Note",
+      originalFile: props.fileNameActual?.S || "Document",
+      category: props.category,
+      fileType: getString(props, "fileType", "txt"),
+      size: formatBytes(getNumber(props, "sourceSize")),
+      createdAt: props.createdAt?.S || "",
+      storageKey: getStorageKey(props, props.user),
+    };
+    const content =
+      format === "json"
+        ? JSON.stringify(metadata, null, 2)
+        : `# ${metadata.title}\n\n- Original file: ${metadata.originalFile}\n- Category: ${metadata.category}\n- File type: ${metadata.fileType}\n- Size: ${metadata.size}\n- Created: ${metadata.createdAt}\n`;
+    const blob = new Blob([content], { type: format === "json" ? "application/json" : "text/markdown" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${metadata.title.replace(/[^\w.-]+/g, "-")}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleCopyShareLink = async () => {
+    if (!signedUrl) return;
+    await navigator.clipboard.writeText(signedUrl);
+    toast.success("Temporary file link copied", {
+      description: "The link uses the current signed URL and will expire.",
+    });
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -81,6 +118,10 @@ export default function FileDialog(props: any) {
             <DialogDescription className="flex items-center gap-2">
               <FileText size={14} />
               {props.fileNameActual?.S || "Document"}
+              <span className="text-muted-foreground">/</span>
+              {getString(props, "fileType", "txt").toUpperCase()}
+              <span className="text-muted-foreground">/</span>
+              {formatBytes(getNumber(props, "sourceSize"))}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -114,6 +155,18 @@ export default function FileDialog(props: any) {
               Close
             </Button>
           </DialogClose>
+          <Button variant="outline" className="gap-2" onClick={() => handleExportMetadata("md")}>
+            <FileText size={16} />
+            Export MD
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => handleExportMetadata("json")}>
+            <Copy size={16} />
+            Export JSON
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={handleCopyShareLink} disabled={!signedUrl}>
+            <Share2 size={16} />
+            Copy Link
+          </Button>
           
           <Button 
             className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white gap-2 font-bold shadow-lg shadow-blue-500/20"

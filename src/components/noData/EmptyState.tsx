@@ -1,5 +1,5 @@
 
-import { FileStack, Plus, UploadCloud } from "lucide-react"; // Added icons
+import { FileStack } from "lucide-react";
 
 
 export default function EmptyState() {

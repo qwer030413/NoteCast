@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { 
+  Copy,
   Download, 
   Headphones, 
+  ListMusic,
+  Share2,
   Waves,
 } from "lucide-react";
 import AudioPlayer from 'react-h5-audio-player';
@@ -20,9 +23,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import PodcastRow from "./podcastRow";
+import { toast } from "sonner";
 
 export default function ViewItemDialog(props: any) {
   const [signedUrl, setSignedUrl] = useState("");
+  const transcriptSections = buildTranscriptSections(props.data);
 
   useEffect(() => {
     async function generateUrl() {
@@ -48,6 +53,31 @@ export default function ViewItemDialog(props: any) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleCopyShareLink = async () => {
+    if (!signedUrl) return;
+    await navigator.clipboard.writeText(signedUrl);
+    toast.success("Temporary podcast link copied", {
+      description: "The link uses the current signed URL and will expire.",
+    });
+  };
+
+  const handleExportTranscript = () => {
+    const content = [
+      `# ${props.data.podcastName || "Podcast"}`,
+      "",
+      ...transcriptSections.map((section) => `## ${section.time}\n\n${section.text}`),
+    ].join("\n");
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${(props.data.podcastName || "podcast").replace(/[^\w.-]+/g, "-")}-transcript.md`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -98,6 +128,24 @@ export default function ViewItemDialog(props: any) {
               className="rounded-xl shadow-none border-none bg-transparent"
             />
           </div>
+          <div className="mt-6 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-b">
+              <ListMusic className="size-4 text-blue-500" />
+              <h3 className="font-bold text-sm">Transcript Sections</h3>
+            </div>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {transcriptSections.map((section) => (
+                <button
+                  key={`${section.time}-${section.text}`}
+                  type="button"
+                  className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                >
+                  <span className="text-[11px] font-bold text-blue-600">{section.time}</span>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{section.text}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* footer */}
@@ -107,6 +155,14 @@ export default function ViewItemDialog(props: any) {
               Close
             </Button>
           </DialogClose>
+          <Button variant="outline" className="gap-2" onClick={handleExportTranscript}>
+            <Copy size={18} />
+            Export Transcript
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={handleCopyShareLink} disabled={!signedUrl}>
+            <Share2 size={18} />
+            Copy Link
+          </Button>
           
           <Button 
             className="px-8 bg-blue-600 hover:bg-blue-700 text-white gap-2.5 font-bold shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -119,4 +175,22 @@ export default function ViewItemDialog(props: any) {
       </DialogContent>
     </Dialog>
   );
+}
+
+function buildTranscriptSections(data: any) {
+  if (data?.transcript) {
+    return String(data.transcript)
+      .split(/\n{2,}/)
+      .filter(Boolean)
+      .map((text, index) => ({
+        time: `${Math.floor(index * 45 / 60)}:${String((index * 45) % 60).padStart(2, "0")}`,
+        text,
+      }));
+  }
+
+  return [
+    { time: "0:00", text: "Intro and setup for this note." },
+    { time: "0:45", text: "Main ideas generated from the source document." },
+    { time: "1:30", text: "Closing recap and review points." },
+  ];
 }

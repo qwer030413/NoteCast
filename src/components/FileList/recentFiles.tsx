@@ -86,6 +86,9 @@ export default function RecentFiles(props: any) {
                           fileId={file.fileId} 
                           category={category} 
                           fileNameActual={file.fileNameActual} 
+                          storageKey={file.storageKey}
+                          fileType={file.fileType}
+                          sourceSize={file.sourceSize}
                           createdAt={file.createdAt} 
                           index={index} 
                           fileName={file.fileName} 

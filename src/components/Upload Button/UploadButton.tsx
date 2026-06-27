@@ -37,18 +37,22 @@ interface UploadButtonProps {
     onUploadSuccess: () => void;
     Text : string;
 }
+type PollyEngine = "standard" | "neural" | "long-form" | "generative";
+
 export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProps) {
     const { dynamoClient, pollyClient, bedrockAgent } = useAwsClients();
     const { user } = useAuth();
 
 
     const [categoryValue, setCategoryValue] = useState("")
-    const [engine, setEngine] = useState<"standard" | "neural">("standard")
+    const [engine, setEngine] = useState<PollyEngine>("standard")
     const [voice, setVoice] = useState("")
     const [voices, setVoices] = useState<{ value: string; label: string }[]>([]);
+    const [open, setOpen] = useState(false);
     const dialogCloseRef = useRef<HTMLButtonElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [shouldConvertAudio, setShouldConvertAudio] = useState(true);
+    const [shouldIndexForAi, setShouldIndexForAi] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const categories = [
         { value: "Class Work", label: "Class Work" },
@@ -88,17 +92,30 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
         e.preventDefault();
         setSelectedFile(null);
     }
-    const fetchVoices = async (engine: "standard" | "neural") => {
+    const fetchVoices = async (engine: PollyEngine) => {
+        const cacheKey = `notecast-polly-voices-${engine}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            try {
+                return JSON.parse(cached) as { value: string; label: string }[];
+            } catch {
+                localStorage.removeItem(cacheKey);
+            }
+        }
         const command = new DescribeVoicesCommand({
-            Engine: engine
+            Engine: engine as any
         })
-        console.log(!pollyClient)
         if (!pollyClient) {
             return;
         }
         try {
             const data = await pollyClient.send(command)
-            return data.Voices || []
+            const voiceOptions = (data.Voices || []).map((voice) => ({
+                value: voice.Id ?? "",
+                label: `${voice.Name} (${voice.Gender})`,
+            }));
+            localStorage.setItem(cacheKey, JSON.stringify(voiceOptions));
+            return voiceOptions
         }
         catch (err) {
             console.log(err)
@@ -107,17 +124,14 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
     }
     useEffect(() => {
         const loadVoices = async () => {
+            if (!open || !shouldConvertAudio) return;
             const voiceList = await fetchVoices(engine);
             if (voiceList) {
-                const voiceOptions = voiceList.map((voice) => ({
-                    value: voice.Id ?? "",
-                    label: `${voice.Name} (${voice.Gender})`,
-                }));
-                setVoices(voiceOptions ?? []);
+                setVoices(voiceList ?? []);
             }
         };
         loadVoices();
-    }, [engine, pollyClient])
+    }, [engine, pollyClient, open, shouldConvertAudio])
 
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -131,17 +145,26 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
             toast.error("Please fill in all fields.");
             return;
         }
+        const extension = fileNameActual.includes(".") ? fileNameActual.split(".").pop()?.toLowerCase() : "txt";
+        const canConvertText = ["txt", "md"].includes(extension || "");
+        if (shouldConvertAudio && !canConvertText) {
+            toast.error("Audio conversion currently supports TXT and MD files. Upload the PDF without audio, or convert it to text first.");
+            return;
+        }
         if (shouldConvertAudio && !voice) {
             toast.error("Please select a voice for your podcast.");
             return;
         }
-        if (!dynamoClient || !pollyClient) {
+        if (shouldIndexForAi && !window.confirm("This will start a Bedrock knowledge-base ingestion job for this upload. Continue?")) {
+            return;
+        }
+        if (!dynamoClient || (shouldConvertAudio && !pollyClient)) {
             toast.error("client is not initialized.");
             return;
         }
         const noteId = uuidv4();
         const podcastId = uuidv4();
-        const key = `private/${username}/notes/${noteId}.txt`;
+        const key = `private/${username}/notes/${noteId}.${extension || "txt"}`;
         const audioKey = `private/${username}/audio/${podcastId}.mp3`;
         setIsUploading(true)
         try {
@@ -174,8 +197,14 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                     userName: { S: username },
                     fileName: { S: fileName },
                     fileNameActual: { S: fileNameActual },
+                    storageKey: { S: key },
+                    fileType: { S: extension || "txt" },
+                    sourceSize: { N: String(file.size) },
                     createdAt: { S: new Date().toISOString() },
-                    category: { S: categoryValue }
+                    category: { S: categoryValue },
+                    tags: { SS: [categoryValue] },
+                    status: { S: "uploaded" },
+                    aiStatus: { S: shouldIndexForAi ? "indexing_requested" : "not_indexed" }
                 },
             });
             await dynamoClient.send(command);
@@ -184,10 +213,10 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                 const pollyCommand = new SynthesizeSpeechCommand({
                     OutputFormat: "mp3",
                     Text: fileText,
-                    VoiceId: "Joanna",
-                    Engine: engine
+                    VoiceId: voice as any,
+                    Engine: engine as any
                 });
-                const pollyResponse = await pollyClient.send(pollyCommand)
+                const pollyResponse = await pollyClient!.send(pollyCommand)
                 const audioStream = pollyResponse.AudioStream
                 if (!audioStream) {
                     throw new Error("Polly did not return audio")
@@ -215,7 +244,7 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                 });
                 await dynamoClient.send(AudioCommand);
             }
-            if (bedrockAgent) {
+            if (shouldIndexForAi && bedrockAgent) {
                 const syncCommand = new StartIngestionJobCommand({
                     knowledgeBaseId: "ZEYGFYPU3S",
                     dataSourceId: "10Z5LEVPS5",
@@ -240,10 +269,12 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
             setEngine("standard")
             setVoice("")
             setCategoryValue("")
+            setShouldIndexForAi(false)
+            setSelectedFile(null)
         }
     };
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button className="h-12 px-6 text-base font-medium shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] gap-2">
                     <CloudUpload size={18} />
@@ -322,7 +353,7 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                                             <p className="text-sm text-slate-500">
                                                 <span className="font-semibold text-blue-600">Click to upload</span> or drag and drop
                                             </p>
-                                            <p className="text-xs text-slate-400 mt-1">TXT, or PDF</p>
+                                            <p className="text-xs text-slate-400 mt-1">TXT, MD, or PDF</p>
                                         </>
                                     )}
                                 </div>
@@ -334,7 +365,7 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                                     name="file"
                                     className="hidden"
                                     onChange={handleFileChange}
-                                    accept=".txt,.pdf" // Limits file picker to these types
+                                    accept=".txt,.md,.pdf"
                                 />
                             </label>
                         </div>
@@ -402,6 +433,17 @@ export default function UploadButton({ onUploadSuccess, Text }: UploadButtonProp
                                     </motion.div>
                                 )}
                             </AnimatePresence>
+                        </div>
+                        <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 p-4 flex items-center justify-between gap-4">
+                            <div>
+                                <p className="text-sm font-bold text-amber-900 dark:text-amber-100">Index for AI chat</p>
+                                <p className="text-[11px] text-amber-700/80 dark:text-amber-200/70">Starts one Bedrock ingestion job after upload.</p>
+                            </div>
+                            <Checkbox
+                                checked={shouldIndexForAi}
+                                onCheckedChange={(checked) => setShouldIndexForAi(checked === true)}
+                                className="size-5 rounded-md data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
+                            />
                         </div>
                     </div>
 
