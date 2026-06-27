@@ -5,7 +5,6 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { PollyClient } from "@aws-sdk/client-polly";
 import { BedrockAgentRuntimeClient } from "@aws-sdk/client-bedrock-agent-runtime";
 import { BedrockAgentClient } from "@aws-sdk/client-bedrock-agent";
-import { Hub } from "aws-amplify/utils";
 import { useAuth } from "./AuthProvider";
 type AwsClients = {
   dynamoClient?: DynamoDBClient;
@@ -28,6 +27,10 @@ export function AwsClientProvider({
   });
   const { user } = useAuth();
   const initClients = useCallback(async () => {
+    if (!user) {
+      setClients({ loading: false });
+      return;
+    }
     try {
       setClients((prev) => ({ ...prev, loading: true }));
       const session = await fetchAuthSession();
@@ -60,24 +63,7 @@ export function AwsClientProvider({
   }, [user]);
 
   useEffect(() => {
-    // 2. Initial attempt on load
     initClients();
-
-    // 3. Listen for Auth events (Login/Logout)
-    const unsubscribe = Hub.listen("auth", ({ payload }) => {
-      switch (payload.event) {
-        case "signedIn":
-          console.log("User signed in, re-initializing clients...");
-          initClients();
-          break;
-        case "signedOut":
-          // Clear clients on logout to prevent "stale" info from previous user
-          setClients({ loading: false });
-          break;
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup listener on unmount
   }, [initClients]);
 
   return (

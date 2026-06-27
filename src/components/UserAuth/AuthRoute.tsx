@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from "react"
+import type { ReactElement } from "react"
 import { Navigate } from "react-router-dom"
-import { getCurrentUser } from '@aws-amplify/auth'
+import { useAuth } from "@/aws/AuthProvider"
 
-interface AuthRouteProps {
-  children: React.ReactElement
-}
+export function AuthRoute({ children }: { children: ReactElement }) {
+  const { user, userLoading } = useAuth()
 
-export function AuthRoute({ children }: AuthRouteProps) {
-  const [loading, setLoading] = useState(true)
-  const [authenticated, setAuthenticated] = useState(false)
-
-  useEffect(() => {
-    getCurrentUser()
-      .then(() => setAuthenticated(true))
-      .catch(() => setAuthenticated(false))
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return null 
-
-  if (!authenticated) {
-    return <Navigate to="/" replace />
-  }
+  if (userLoading) return null
+  if (!user) return <Navigate to="/" replace />
 
   return children
 }

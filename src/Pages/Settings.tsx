@@ -47,7 +47,7 @@ export default function Settings() {
             try {
                 setEmail(attributes.email)
                 setProfilePic(attributes.picture)
-                setTheme(attributes['custom:Theme'])
+                setTheme(attributes['custom:Theme'] || "system")
                 
             } catch (err) {
                 console.error("Initialization error:", err);
